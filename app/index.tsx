@@ -1,11 +1,14 @@
 import React from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Stack, useRouter } from "expo-router";
+import styles from './styles/Styles'; // Importa los estilos
+
 
 export default function Index() {
   const router = useRouter();
 
   const handleStart = () => {
+    router.push('/register');
   };
 
   return (
@@ -38,50 +41,3 @@ export default function Index() {
     </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#ff9a16',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-  },
-  image: {
-    width: 220,
-    height: 220,
-    marginBottom: 20,
-  },
-  logo: {
-    width: 220,
-    height: 100,
-    marginBottom: 20,
-  },
-  tagline: {
-    fontSize: 20,
-    textAlign: 'center',
-    marginVertical: 20,
-    color: '#fff',
-  },
-  button: {
-    backgroundColor: '#fff',
-    paddingVertical: 15,
-    paddingHorizontal: 40,
-    borderRadius: 25,
-    marginTop: 10,
-  },
-  buttonText: {
-    color: '#000',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  loginText: {
-    marginTop: 30,
-    fontSize: 20,
-    color: '#fff',
-  },
-  loginLink: {
-    color: '#fff',
-    textDecorationLine: 'underline',
-  },
-});

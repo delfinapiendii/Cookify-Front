@@ -1,0 +1,22 @@
+[
+    {
+     "id": "entradas",
+     "title": "entradas",
+     "imageUrl": "https://tn.com.ar/resizer/v2/entradas-frias-para-la-navidad-y-ano-nuevo-foto-shutterstock-5I7CBWMJG5C3VIH77XXBWEL4B4.jpg?auth=228812a9d9f2d76eb7a590def58b6c936155357eb3f2e26f9b80de0c754cfa6e&width=1440"
+    },
+    {
+     "id": "cenas",
+     "title": "cenas",
+     "imageUrl": "https://www.brillante.es/wp-content/uploads/2024/03/cenasaludable6-1.jpg"
+    },
+    {
+     "id": "postres",
+     "title": "postres",
+     "imageUrl": "https://hips.hearstapps.com/hmg-prod/images/chocolate-pie-cookies-index-66fc19fd2a802.jpg?crop=0.337xw:1.00xh;0.363xw,0&resize=980:*"
+    },
+    {
+     "id": "almuerzos",
+     "title": "almuerzos",
+     "imageUrl": "https://www.peticiones.ar/uploads/images/arreglo-comidas-planas-cocinar-lotes1.jpg"
+    }
+   ]
