@@ -1,0 +1,54 @@
+[
+    {
+      "id": "1",
+      "title": "Carne al horno con papas",
+      "imageUrl": "URL_CARNE_HORNO",
+      "rating": "4.5",
+      "chef": "delfinapiendi"
+    },
+    {
+      "id": "2",
+      "title": "Ensalada ceasar",
+      "imageUrl": "URL_ENSALADA_CEASAR",
+      "rating": "3.0",
+      "chef": "totoSpirito"
+    },
+    {
+      "id": "3",
+      "title": "Carne al horno con papas",
+      "imageUrl": "URL_CARNE_HORNO_2",
+      "rating": "4.8",
+      "chef": "otroChef"
+    },
+    {
+      "id": "4",
+      "title": "Ensalada ceasar",
+      "imageUrl": "URL_ENSALADA_CEASAR_2",
+      "rating": "3.5",
+      "chef": "alguienMas"
+    } , 
+    {
+      "id": "5",
+      "title": "Ensalada ceasar",
+      "imageUrl": "URL_ENSALADA_CEASAR_2",
+      "rating": "3.5",
+      "chef": "alguienMas"
+    },  
+    {
+      "id": "6",
+      "title": "Ensalada ceasar",
+      "imageUrl": "URL_ENSALADA_CEASAR_2",
+      "rating": "3.5",
+      "chef": "alguienMas"
+    }  ,
+    {
+      "id": "7",
+      "title": "Ensalada ceasar",
+      "imageUrl": "URL_ENSALADA_CEASAR_2",
+      "rating": "3.5",
+      "chef": "alguienMas"
+    }  
+  
+  
+  
+  ]

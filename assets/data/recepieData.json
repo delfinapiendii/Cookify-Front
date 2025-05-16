@@ -1,0 +1,40 @@
+{
+    "recipe": {
+      "title": "Carne al Horno con Papas",
+      "author": "@delfinafiore",
+      "rating": 4.5,
+      "ratingCount": 4,
+      "publicationDate": "Publicada el 22 de Mayo de 2023",
+      "description": "Carne bien doradita por fuera y jugosa por dentro, acompañada de unas ricas papas al horno o fritas. ¡Fácil, rico y va con todo!",
+      "ingredients": [
+        "500 g de carne de res (falda, bola de res o lomo), en cubos",
+        "3 papas medianas, peladas y cortadas en cubos",
+        "1 cebolla mediana, picada",
+        "2 tomates medianos, picados",
+        "2 dientes de ajo, picados",
+        "1 taza de caldo de res o agua",
+        "2 cucharadas de aceite vegetal",
+        "1 cucharadita de comino",
+        "1 cucharadita de orégano seco",
+        "1 hoja de laurel",
+        "Sal y pimienta al gusto"
+      ],
+      "preparation": [
+        "En una olla grande o sartén profunda, calienta el aceite a fuego medio-alto. Agrega los cubos de carne y dora por todos lados (aprox. 8-10 minutos). Retira y reserva.",
+        "En la misma olla, agrega la cebolla y el ajo. Sofríe por 3 minutos. Añade el tomate, sal y pimienta al gusto. Cocina por 5 minutos más, revolviendo ocasionalmente.",
+        "Regresa la carne a la olla y mezcla bien. Agrega el caldo, el comino, el orégano, laurel, sal y pimienta. Vierte suficiente líquido para cubrir la carne. Lleva a ebullición, luego reduce el fuego a bajo, tapa y cocina a fuego lento por 1 hora o hasta que la carne esté tierna.",
+        "Añade las papas y zanahorias (si las usas) a la olla, mezclando bien con la carne. Cocina tapado por 20-30 minutos más o hasta que las papas estén tiernas y la salsa haya espesado.",
+        "Ajusta la sal y retira la hoja de laurel antes de servir. Acompaña con arroz blanco o tortillas."
+      ],
+      "comments": [
+        {
+          "author": "@user_profile",
+          "text": "¡Excelente receta! La carne quedó muy tierna y las papas deliciosas. Gracias por compartir."
+        },
+        {
+          "author": "Invitado",
+          "text": "Muy fácil de hacer y con ingredientes que siempre tengo en casa. ¡Recomendación, agreguen unas zanahorias!"
+        }
+      ]
+    }
+  }

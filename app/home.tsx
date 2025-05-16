@@ -13,8 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
  import featuredRecipesData from '../assets/data/featuredRecepies.json';
  import categoriesData from '../assets/data/categories.json';
 
- const Home = () => {
-   const navigation = useNavigation(); // Inicializa la navegación
+   
 
    // Si estás usando fuentes personalizadas
    // const [fontsLoaded] = useFonts({ ... });
@@ -25,6 +24,7 @@ import { Ionicons } from '@expo/vector-icons';
    const handleRecipePress = (recipeId: string) => {
      // Aquí iría la lógica para navegar a la pantalla de detalle de la receta
      console.log(`Receta tocada con ID: ${recipeId}`);
+     router.push('/RecepieDetailScreen'); // Cambia a la ruta correcta de tu pantalla de detalle
      // Ejemplo de navegación usando expo-router:
      // navigation.navigate('RecipeDetail', { id: recipeId });
    };
@@ -37,14 +37,17 @@ import { Ionicons } from '@expo/vector-icons';
    };
 
    const handleNavigationPress = (screen: string) => {
-     // Aquí iría la lógica para navegar a las diferentes secciones
-     console.log(`Navegar a: ${screen}`);
-     // Ejemplo de navegación usando expo-router:
-     // navigation.navigate(screen);
-   };
+    if (screen == 'Search') {
+      router.push('/SearchScreen'); // Corrected the typo in the path
+    }
+    console.log(`Navegar a: ${screen}`);
+    // Ejemplo de navegación usando expo-router:
+    // navigation.navigate(screen);
+  };
 
-   return (
-     <><ScrollView style={styles.containerHome} contentContainerStyle={{ paddingBottom: 80 }}>
+  const Home = () => {
+     return (
+       <><ScrollView style={styles.containerHome} contentContainerStyle={{ paddingBottom: 80 }}>
            <View style={styles.logoContainer}>
                <Image
                    source={require('../assets/images/logoWhite.png')}
@@ -81,7 +84,7 @@ import { Ionicons } from '@expo/vector-icons';
 
 
            {/* Sección "Categorías" */}
-           <Text style={styles1.sectionTitle}>Categorías</Text>
+           <Text style={styles.sectionTitle}>Categorías</Text>
            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
                {categoriesData.map((category) => (
                    <TouchableOpacity key={category.id} style={styles.categoryCard} onPress={() => handleCategoryPress(category.id)}>
@@ -94,78 +97,28 @@ import { Ionicons } from '@expo/vector-icons';
                    </TouchableOpacity>
                ))}
            </ScrollView>
-       </ScrollView>
-       <View style={styles.bottomNavigation}>
-               <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
-                   <Ionicons name="home-outline" size={24} color="#333" />
-               </TouchableOpacity>
-               <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Search')}>
-                   <Ionicons name="search-outline" size={24} color="#333" />
-               </TouchableOpacity>
-               <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('AddRecipe')}>
-                   <View style={styles.addButton}>
-                       <Ionicons name="add" size={32} color="#000000" />
-                   </View>
-               </TouchableOpacity>
-               <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Bookmarks')}>
-                   <Ionicons name="book-outline" size={24} color="#333" />
-               </TouchableOpacity>
-               <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Profile')}>
-                   <Ionicons name="person-outline" size={24} color="#333" />
-               </TouchableOpacity>
-           </View></>
-   );
- };
+     </ScrollView>
+     <View style={styles.bottomNavigation}>
+             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
+                 <Ionicons name="home-outline" size={24} color="#FF9A16" />
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Search')}>
+                 <Ionicons name="search-outline" size={24} color="#333" />
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('AddRecipe')}>
+                 <View style={styles.addButton}>
+                     <Ionicons name="add" size={32} color="#000000" />
+                 </View>
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Bookmarks')}>
+                 <Ionicons name="book-outline" size={24} color="#333" />
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Profile')}>
+                 <Ionicons name="person-outline" size={24} color="#333" />
+             </TouchableOpacity>
+         </View>
+     </>
+ )};
 
- const styles1 = StyleSheet.create({
-   container: {
-     flex: 1,
-     backgroundColor: '#fff',
-     paddingBottom: 60, // Para dar espacio a la barra de navegación
-   },
-   logoContainer: {
-     padding: 15,
-     alignItems: 'center',
-   },
-   logo: {
-     width: 150,
-     height: 50,
-     resizeMode: 'contain',
-   },
-   
-   
-   
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    padding: 15,
-  },
-   
-   
-   
-   categoryCard: {
-     width: 80,
-     height: 80,
-     borderRadius: 10,
-     overflow: 'hidden',
-     backgroundColor: '#f0f0f0',
-     alignItems: 'center',
-     justifyContent: 'center',
-   },
-   
-   categoryTitle: {
-     position: 'absolute',
-     bottom: 0,
-     left: 0,
-     right: 0,
-     backgroundColor: 'rgba(0,0,0,0.5)',
-     color: '#fff',
-     fontSize: 12,
-     textAlign: 'center',
-     paddingVertical: 5,
-   },
-   
- 
- });
 
  export default Home;
