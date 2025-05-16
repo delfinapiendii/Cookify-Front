@@ -75,7 +75,7 @@ import styles from './styles/Styles';
 
    return (
      <>
-     <ScrollView style={[styles.containerHome, { paddingTop: 80 }]}>
+     <ScrollView style={[styles.containerHome, { paddingTop: 80 , marginBottom:80}]}>
        {/* Logo */}
        <View style={styles.logoContainer}>
          <Image

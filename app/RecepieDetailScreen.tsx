@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
- import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity, TextInput } from 'react-native';
+ import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Modal } from 'react-native';
  import { Ionicons } from '@expo/vector-icons';
  import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
  import * as SplashScreen from 'expo-splash-screen';
 
  // Importa el JSON data
  import recipeData from '../assets/data/recepieData.json';
+import { useNavigation } from 'expo-router';
 
  const RecipeDetailScreen = () => {
     const [servings, setServings] = useState(4);
    const { recipe } = recipeData;
    const [isBookmarked, setIsBookmarked] = useState(false);
+   const navigation = useNavigation();
+   const [userRating, setUserRating] = useState(0); // Estado para la valoración del usuario
+   const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+   const [tempRating, setTempRating] = useState(0);
+
 
    const [fontsLoaded] = useFonts({
      WorkSans_400Regular,
@@ -29,22 +35,21 @@ import React, { useState } from 'react';
      return null;
    }
 
-   const renderStars = (rating: number) => {
-     const fullStars = Math.floor(rating);
-     const hasHalfStar = rating % 1 !== 0;
-     const stars = [];
+   const renderStars = (rating: number, onStarPress?: (value: number) => void) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starIcon = i <= rating ? 'star' : 'star-outline';
+      const starColor = i <= rating ? '#FFC107' : '#888';
+      stars.push(
+        <TouchableOpacity key={`star-${i}`} onPress={() => onStarPress?.(i)}>
+          <Ionicons name={starIcon} size={30} color={starColor} />
+        </TouchableOpacity>
+      );
+    }
+    return stars;
+  };
 
-     for (let i = 0; i < 5; i++) {
-       if (i < fullStars) {
-         stars.push(<Ionicons key={`full-${i}`} name="star" size={16} color="#FFC107" />);
-       } else if (hasHalfStar && i === fullStars) {
-         stars.push(<Ionicons key={`half-${i}`} name="star-half" size={16} color="#FFC107" />);
-       } else {
-         stars.push(<Ionicons key={`empty-${i}`} name="star-outline" size={16} color="#888" />);
-       }
-     }
-     return stars;
-   };
+
    const decreaseServings = () => {
     if (servings > 1) {
       setServings(servings - 1);
@@ -61,12 +66,32 @@ import React, { useState } from 'react';
     console.log('Bookmark toggled:', !isBookmarked);
   };
 
+  const openRatingModal = () => {
+    setIsRatingModalVisible(true);
+    setTempRating(userRating); // Inicializar la valoración temporal con la actual
+    console.log('Modal visibility:', isRatingModalVisible); // Agrega esto
+  };
+  const closeRatingModal = () => {
+    setIsRatingModalVisible(false);
+  };
+
+  const confirmRating = () => {
+    setUserRating(tempRating);
+    // Aquí iría la lógica para guardar la valoración del usuario (por ejemplo, en una base de datos)
+    console.log('User rated:', tempRating);
+    closeRatingModal();
+  };
+
+  
+  
+
+
 
    return (
      <ScrollView style={styles.container}>
        <View style={styles.imageContainer}>
         <Image source={require('../assets/images/carnePoster.jpg')} style={styles.recipeImage} resizeMode="cover" />
-        <TouchableOpacity style={styles.backButton}>
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
             <Ionicons name="arrow-back" size={28} color="#fff" />
         </TouchableOpacity>
         </View>
@@ -76,7 +101,7 @@ import React, { useState } from 'react';
               <Ionicons
                 name={isBookmarked ? 'bookmark' : 'bookmark-outline'}
                 size={32}
-                color={isBookmarked ? '#FF9A16' : '#FF9A16'}
+                color={isBookmarked ? '#FF9A16' : '#FF9A16  '}
               />
             </TouchableOpacity>
           </View>
@@ -128,6 +153,13 @@ import React, { useState } from 'react';
 
          <View style={styles.divider} />
 
+         <TouchableOpacity style={styles.openRatingButton} onPress={openRatingModal}>
+           <Text style={styles.openRatingText}>¿Desea valorar esta receta?</Text>
+           <View style={styles.currentRating}>
+             {renderStars(userRating)}
+           </View>
+         </TouchableOpacity>
+
          <View style={styles.section}>
            <Text style={styles.sectionTitle}>Comentarios</Text>
            {recipe.comments.map((comment, index) => (
@@ -147,6 +179,26 @@ import React, { useState } from 'react';
            </View>
          </View>
        </View>
+       <Modal
+         visible={isRatingModalVisible}
+         transparent={true}
+         animationType="slide"
+       >
+         <View style={styles.modalOverlay}>
+           <View style={styles.modalContent}>
+             <Text style={styles.modalTitle}>¿Desea valorar esta receta?</Text>
+             <View style={styles.modalRatingStars}>
+               {renderStars(tempRating, (value) => setTempRating(value))}
+             </View>
+             <TouchableOpacity style={styles.confirmButton} onPress={confirmRating}>
+               <Text style={styles.confirmButtonText}>Confirmar</Text>
+             </TouchableOpacity>
+             <TouchableOpacity style={styles.cancelButton} onPress={closeRatingModal}>
+               <Text style={styles.cancelButtonText}>Cancelar</Text>
+             </TouchableOpacity>
+           </View>
+         </View>
+       </Modal>
      </ScrollView>
    );
  };
@@ -165,8 +217,7 @@ import React, { useState } from 'react';
   recipeImage: {
     width: '100%',
     height: '100%',
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    
   },
   
   backButton: {
@@ -324,6 +375,67 @@ import React, { useState } from 'react';
    sendButton: {
      padding: 10,
    },
+   openRatingButton: {
+    paddingVertical: 15,
+    alignItems: 'center',
+  },
+  openRatingText: {
+    fontSize: 16,
+    fontFamily: 'WorkSans_400Regular',
+    color: '#333',
+    marginBottom: 5,
+  },
+  currentRating: {
+    flexDirection: 'row',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContent: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    width: '80%',
+    borderColor: '#FF9A16',
+    borderWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'WorkSans_700Regular',
+    marginBottom: 15,
+  },
+  modalRatingStars: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  confirmButton: {
+    backgroundColor: '#FF9A16',
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontFamily: 'WorkSans_400Regular',
+  },
+  cancelButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 25,
+    borderRadius: 8,
+    borderColor: '#888',
+    borderWidth: 1,
+  },
+  cancelButtonText: {
+    color: '#888',
+    fontSize: 16,
+    fontFamily: 'WorkSans_400Regular',
+  },
  });
 
  export default RecipeDetailScreen;

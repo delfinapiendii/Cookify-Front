@@ -390,6 +390,8 @@ centerlogo: {
     justifyContent: 'center',
     borderWidth:2,
   },
+
+
 });
 
 export default styles;

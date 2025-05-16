@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
  // Importa los datos desde tus archivos JSON
  import featuredRecipesData from '../assets/data/featuredRecepies.json';
  import categoriesData from '../assets/data/categories.json';
+import { NavigationContainer } from '@react-navigation/native';
 
    
 
@@ -40,6 +41,9 @@ import { Ionicons } from '@expo/vector-icons';
     if (screen == 'Search') {
       router.push('/SearchScreen'); // Corrected the typo in the path
     }
+    if (screen == 'AddRecipe') {
+        router.push('/createRecepieScreen'); // Corrected the typo in the path
+      }
     console.log(`Navegar a: ${screen}`);
     // Ejemplo de navegación usando expo-router:
     // navigation.navigate(screen);
@@ -98,7 +102,7 @@ import { Ionicons } from '@expo/vector-icons';
                ))}
            </ScrollView>
      </ScrollView>
-     <View style={styles.bottomNavigation}>
+     <View style={[styles.bottomNavigation, { backgroundColor: '#FFFFFF' }]}>
              <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
                  <Ionicons name="home-outline" size={24} color="#FF9A16" />
              </TouchableOpacity>
