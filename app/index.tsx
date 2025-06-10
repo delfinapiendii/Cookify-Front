@@ -11,7 +11,7 @@ export default function Index() {
     router.push('/register');
   };
   const handleLogin = () => {
-    router.push('/home');
+    router.push('/login');
   };
 
   return (

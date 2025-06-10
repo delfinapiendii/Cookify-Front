@@ -91,31 +91,56 @@ centerlogo: {
    paddingBottom: 20,
 
   },
+  titleContrasena: {
+    fontSize: 20,
+    marginVertical: 10,
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: 'WorkSans_400Regular',
+   paddingBottom: 20,
+
+  },
   input: {
     height: 65,
     borderColor: '#ccc',
     borderRadius: 30,
     textAlign: 'center',
     backgroundColor: '#F5F5F5',
-        marginBottom: 15,
       fontFamily: 'WorkSans_400Regular',
     fontSize: 17,
     maxHeight: 65,
     marginLeft: 10,
     marginRight: 10,
+    marginBottom: 15,
+    borderWidth: 1,
   },
-  start: {
+  loginButton: {
     height: 65,
-    borderRadius: 30,
-    textAlign: 'center',
-    alignContent: 'center',
-    justifyContent: 'center',
-      fontFamily: 'WorkSans_400Regular',
-    fontSize: 17,
-    color: '#fff',
+    maxHeight: 65,
+    marginLeft: 10,
+    marginRight: 10,
     backgroundColor: '#FF9A16',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    
   },
-
+  loginButtonText: {
+    color: '#fff',
+    fontSize: 20,
+    fontFamily: 'WorkSans_400Regular',
+  },
+  inputError: {
+    borderColor: 'red',
+  },
+  // Nuevo estilo para el mensaje de error
+  errorMessage: {
+    color: 'red',
+    fontSize: 12,
+    fontFamily: 'WorkSans_400Regular',
+    marginBottom: 20, // Espacio después del mensaje de error
+    alignSelf: 'center', // Centra el mensaje de error
+  },
    // Estilos para la pantalla de home
    containerHome: {
     flex: 1,
@@ -359,37 +384,6 @@ centerlogo: {
   },
 
 
-
-
-
-  // Estilos para la barra de navegación
-  bottomNavigation: {
-    position: 'absolute',
-    bottom: 20,
-    left: 7,
-    right: 7,
-    borderRadius: 30,
-    backgroundColor: '#FFD091',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  navItem: {
-    padding: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButton: {
-    backgroundColor: '#FF9A16', // Color naranja similar
-    borderRadius: 30,
-    width: 35,
-    height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth:2,
-  },
 
 
 });

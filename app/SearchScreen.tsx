@@ -49,6 +49,8 @@ const SearchScreen = () => {
 
   return (
     <>
+               <View style={{ flex: 1, backgroundColor: '#fff' }}>
+    
       <ScrollView style={[styles.containerHome, { paddingTop: 80, marginBottom: 80 }]}>
         <LogoHeader />
 
@@ -125,6 +127,7 @@ const SearchScreen = () => {
       />
 
       <BottomNavigation />
+    </View>
     </>
   );
 };

@@ -51,7 +51,10 @@ import { NavigationContainer } from '@react-navigation/native';
 
   const Home = () => {
      return (
-       <><ScrollView style={styles.containerHome} contentContainerStyle={{ paddingBottom: 80 }}>
+       <>
+           <View style={{ flex: 1, backgroundColor: '#fff' }}>
+
+           <ScrollView style={styles.containerHome} contentContainerStyle={{ paddingBottom: 80 }}>
            <LogoHeader />
 
 
@@ -99,6 +102,7 @@ import { NavigationContainer } from '@react-navigation/native';
            </ScrollView>
      </ScrollView>
      <BottomNavigation />
+     </View>
      </>
  )};
 

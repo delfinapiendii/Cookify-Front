@@ -14,6 +14,7 @@ const navbarStyles = StyleSheet.create({
     justifyContent: 'space-around',
     paddingVertical: 10,
     borderTopWidth: 1,
+    backgroundColor: '#fff',
   },
   navItem: {
     padding: 5,
