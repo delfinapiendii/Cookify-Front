@@ -1,451 +1,237 @@
-import React, { useState } from 'react';
- import {
-   ScrollView,
-   View,
-   Text,
-   TextInput,
-   TouchableOpacity,
-   Image,
-   StyleSheet,
- } from 'react-native';
- import { Ionicons } from '@expo/vector-icons';
- import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
- import * as SplashScreen from 'expo-splash-screen';
- import { Picker } from '@react-native-picker/picker';
+import React, { useState, useEffect } from 'react';
+import {
+  ScrollView,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Modal,
+} from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
+import * as SplashScreen from 'expo-splash-screen';
+import { Picker } from '@react-native-picker/picker';
 import { router } from 'expo-router';
+import LogoHeader from './components/logoHeader';
+import NavBar from './components/navBar';
+import { styles } from './styles/createRecipeStyles';
+import ModalSelector from './components/modalSelector';
 
- const CreateRecipeScreen = () => {
-   const [recipeName, setRecipeName] = useState('');
-   const [description, setDescription] = useState('');
-   const [recipeType, setRecipeType] = useState('');
-   const [servings, setServings] = useState('');
-   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }]);
-   const [steps, setSteps] = useState(['']);
 
-   const [fontsLoaded] = useFonts({
-     WorkSans_400Regular,
-     WorkSans_700Bold,
-   });
+const CreateRecipeScreen = () => {
+  const [recipeName, setRecipeName] = useState('');
+  const [description, setDescription] = useState('');
+  const [recipeType, setRecipeType] = useState('');
+  const [servings, setServings] = useState('');
+  const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }]);
+  const [steps, setSteps] = useState(['']);
+  const [showPicker, setShowPicker] = useState(false);
+  const [isMyModalVisible, setMyModalVisible] = useState(false);
 
-   React.useEffect(() => {
-     if (!fontsLoaded) {
-       SplashScreen.preventAutoHideAsync();
-     } else {
-       SplashScreen.hideAsync();
-     }
-   }, [fontsLoaded]);
+const toggleMyModal = () => {
+  setMyModalVisible(!isMyModalVisible);
+};
 
-   if (!fontsLoaded) {
-     return null;
-   }
 
-   const handleAddIngredient = () => {
-     setIngredients([...ingredients, { name: '', quantity: '' }]);
-   };
 
-   const handleIngredientChange = (index: number, field: string, value: string) => {
-     const newIngredients = [...ingredients];
-     newIngredients[index][field as 'name' | 'quantity'] = value;
-     setIngredients(newIngredients);
-   };
 
-   const handleRemoveIngredient = (index: number) => {
-     const newIngredients = ingredients.filter((_, i) => i !== index);
-     setIngredients(newIngredients);
-   };
+  const [fontsLoaded] = useFonts({
+    WorkSans_400Regular,
+    WorkSans_700Bold,
+  });
 
-   const handleAddStep = () => {
-     setSteps([...steps, '']);
-   };
+  useEffect(() => {
+    if (!fontsLoaded) {
+      SplashScreen.preventAutoHideAsync();
+    } else {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
-   const handleStepChange = (index: number, value: string) => {
-     const newSteps = [...steps];
-     newSteps[index] = value;
-     setSteps(newSteps);
-   };
+  if (!fontsLoaded) {
+    return null;
+  }
 
-   const handleRemoveStep = (index: number) => {
-     const newSteps = steps.filter((_, i) => i !== index);
-     setSteps(newSteps);
-   };
+  const handleAddIngredient = () => {
+    setIngredients([...ingredients, { name: '', quantity: '' }]);
+  };
 
-   const handlePublishRecipe = () => {
-     // Aquí iría la lógica para guardar la receta
-     console.log('Receta a publicar:', {
-       recipeName,
-       description,
-       recipeType,
-       servings,
-       ingredients,
-       steps,
-     });
-   };
-   const handleNavigationPress = (screen: string) => {
-         if (screen == 'Home') {
-            router.push('/home'); // Corrected the typo in the path
-         }  
-       if (screen == 'Search') {
-         router.push('/SearchScreen'); // Corrected the typo in the path
-       }
-       if (screen == 'AddRecipe') {
-           router.push('/createRecepieScreen'); // Corrected the typo in the path
-         }
-       console.log(`Navegar a: ${screen}`);
-       // Ejemplo de navegación usando expo-router:
-       // navigation.navigate(screen);
-     };
+  const handleIngredientChange = (index: number, field: string, value: string) => {
+    const newIngredients = [...ingredients];
+    newIngredients[index][field as 'name' | 'quantity'] = value;
+    setIngredients(newIngredients);
+  };
 
-   return (
-     <><ScrollView style={styles.container}>
+  const handleRemoveIngredient = (index: number) => {
+    const newIngredients = ingredients.filter((_, i) => i !== index);
+    setIngredients(newIngredients);
+  };
 
-           <View style={styles.logoContainer}>
-               <Image
-                   source={require('../assets/images/logoWhite.png')}
-                   style={styles.logo}
-                   resizeMode="contain" />
-           </View>
-           <View style={styles.header}>
-               <Text style={styles.title}>Crear Receta</Text>
-           </View>
+  const handleAddStep = () => {
+    setSteps([...steps, '']);
+  };
 
-           <TouchableOpacity style={styles.imagePicker}>
-               <View style={styles.cameraIconContainer}>
-                   <Ionicons name="camera" size={40} color="#888" />
-                   <Ionicons name="add-circle" size={20} color="#555" style={styles.addIcon} />
-               </View>
-           </TouchableOpacity>
+  const handleStepChange = (index: number, value: string) => {
+    const newSteps = [...steps];
+    newSteps[index] = value;
+    setSteps(newSteps);
+  };
 
-           <TextInput
-               style={styles.input}
-               placeholder="Nombre"
-               value={recipeName}
-               onChangeText={setRecipeName} />
-           <TextInput
-               style={styles.textArea}
-               placeholder="Descripción"
-               multiline
-               value={description}
-               onChangeText={setDescription} />
+  const handleRemoveStep = (index: number) => {
+    const newSteps = steps.filter((_, i) => i !== index);
+    setSteps(newSteps);
+  };
 
-           <View style={styles.pickerContainer}>
-               <Picker
-                   selectedValue={recipeType}
-                   style={styles.picker}
-                   onValueChange={(itemValue: React.SetStateAction<string>) => setRecipeType(itemValue)}
-               >
-                   <Picker.Item label="Seleccionar tipo de receta" value="" />
-                   <Picker.Item label="Desayuno" value="desayuno" />
-                   <Picker.Item label="Almuerzo" value="almuerzo" />
-                   <Picker.Item label="Cena" value="cena" />
-                   {/* Agrega más tipos de receta */}
-               </Picker>
-           </View>
+  const handlePublishRecipe = () => {
+    console.log('Receta a publicar:', {
+      recipeName,
+      description,
+      recipeType,
+      servings,
+      ingredients,
+      steps,
+    });
+  };
 
-           <View style={styles.servingsContainer}>
-               <Ionicons name="person-outline" size={24} color="#555" style={styles.servingsIcon} />
-               <TextInput
-                   style={styles.servingsInput}
-                   placeholder="Cantidad de porciones"
-                   keyboardType="number-pad"
-                   value={servings}
-                   onChangeText={setServings} />
-           </View>
+  const handleNavigationPress = (screen: string) => {
+    if (screen === 'Home') router.push('/home');
+    if (screen === 'Search') router.push('/SearchScreen');
+    if (screen === 'AddRecipe') router.push('/createRecepieScreen');
+  };
 
-           <View style={styles.section}>
-               <Text style={styles.sectionTitle}>Agregar ingredientes</Text>
-               {ingredients.map((ingredient, index) => (
-                   <View key={index} style={styles.ingredientRow}>
-                       <TextInput
-                           style={styles.ingredientInput}
-                           placeholder="ej. Comino"
-                           value={ingredient.name}
-                           onChangeText={(value) => handleIngredientChange(index, 'name', value)} />
-                       <TextInput
-                           style={styles.quantityInput}
-                           placeholder="ej. 200 g"
-                           value={ingredient.quantity}
-                           onChangeText={(value) => handleIngredientChange(index, 'quantity', value)} />
-                       {ingredients.length > 1 && (
-                           <TouchableOpacity onPress={() => handleRemoveIngredient(index)}>
-                               <Ionicons name="close-circle-outline" size={24} color="#FF4D4D" />
-                           </TouchableOpacity>
-                       )}
-                   </View>
-               ))}
-               <TouchableOpacity style={styles.addIngredientButton} onPress={handleAddIngredient}>
-                   <Ionicons name="add-circle-outline" size={30} color="#5CB85C" />
-               </TouchableOpacity>
-           </View>
+  return (
+    <>
+      <ScrollView style={styles.container}>
+        <LogoHeader />
 
-           <View style={styles.section}>
-               <Text style={styles.sectionTitle}>Agregar paso</Text>
-               {steps.map((step, index) => (
-                   <View key={index} style={styles.stepRow}>
-                       <TextInput
-                           style={styles.stepInput}
-                           placeholder={`ej. Agrega la sal lentamente`}
-                           multiline
-                           value={step}
-                           onChangeText={(value) => handleStepChange(index, value)} />
-                       {steps.length > 1 && (
-                           <TouchableOpacity onPress={() => handleRemoveStep(index)}>
-                               <Ionicons name="close-circle-outline" size={24} color="#FF4D4D" />
-                           </TouchableOpacity>
-                       )}
-                   </View>
-               ))}
-               <TouchableOpacity style={styles.addStepButton} onPress={handleAddStep}>
-                   <Ionicons name="add-circle-outline" size={30} color="#5CB85C" />
-               </TouchableOpacity>
-           </View>
+        <Text style={styles.title}>Crear Receta</Text>
 
-           <TouchableOpacity style={styles.removeRecipeButton}>
-               <Ionicons name="trash-outline" size={20} color="#FF4D4D" style={styles.trashIcon} />
-               <Text style={styles.removeRecipeText}>Eliminar receta</Text>
-           </TouchableOpacity>
+        <TouchableOpacity style={styles.imagePicker}>
+          <View style={styles.cameraIconContainer}>
+            <Ionicons name="camera" size={40} color="#888" />
+            <Ionicons name="add-circle" size={20} color="#555" style={styles.addIcon} />
+          </View>
+        </TouchableOpacity>
 
-           <TouchableOpacity style={styles.publishButton} onPress={handlePublishRecipe}>
-               <Text style={styles.publishButtonText}>Publicar</Text>
-           </TouchableOpacity>
-       </ScrollView>
-       
-       
-       
-       <View style={styles.bottomNavigation}>
-         <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
-           <Ionicons name="home-outline" size={24} color="#333" />
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Search')}>
-           <Ionicons name="search-outline" size={24} color="#333" />
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('AddRecipe')}>
-           <View style={styles.addButton}>
-             <Ionicons name="add" size={32} color="#000000" />
-           </View>
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Bookmarks')}>
-           <Ionicons name="book-outline" size={24} color="#333" />
-         </TouchableOpacity>
-         <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Profile')}>
-           <Ionicons name="person-outline" size={24} color="#333" />
-         </TouchableOpacity>
-       </View></>
-     
-   );
- };
+        <TextInput
+          style={styles.input}
+          placeholder="Nombre"
+          value={recipeName}
+          onChangeText={setRecipeName}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="Descripción"
+          multiline
+          value={description}
+          onChangeText={setDescription}
+        />
 
- const styles = StyleSheet.create({
-    logoContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      logo: {
-        width: 150.24,
-        height: 58.55,
-        marginBottom: 20,
-    
-      },
-   container: {
-     flex: 1,
-     padding: 20,
-     backgroundColor: '#FFFFFF',
-   },
-   header: {
-     alignItems: 'center',
-     marginBottom: 20,
-   },
-   title: {
-     fontSize: 24,
-     fontWeight: 'bold',
-     fontFamily: 'WorkSans_700Bold',
-   },
-   imagePicker: {
-     backgroundColor: '#ddd',
-     borderRadius: 10,
-     height: 100,
-     width: '100%',
-     justifyContent: 'center',
-     alignItems: 'center',
-     marginBottom: 20,
-   },
-   cameraIconContainer: {
-     alignItems: 'center',
-     justifyContent: 'center',
-   },
-   addIcon: {
-     position: 'absolute',
-     bottom: 0,
-     right: 0,
-   },
-   input: {
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     padding: 15,
-     marginBottom: 15,
-     borderWidth: 1,
-     borderColor: '#ccc',
-     fontFamily: 'WorkSans_400Regular',
-   },
-   textArea: {
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     padding: 15,
-     marginBottom: 15,
-     borderWidth: 1,
-     borderColor: '#ccc',
-     fontFamily: 'WorkSans_400Regular',
-     minHeight: 80,
-     textAlignVertical: 'top',
-   },
-   pickerContainer: {
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     marginBottom: 15,
-     borderWidth: 1,
-     borderColor: '#ccc',
-   },
-   picker: {
-     height: 50,
-     fontFamily: 'WorkSans_400Regular',
-   },
-   servingsContainer: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     paddingHorizontal: 15,
-     paddingVertical: 10,
-     marginBottom: 15,
-     borderWidth: 1,
-     borderColor: '#ccc',
-   },
-   servingsIcon: {
-     marginRight: 10,
-   },
-   servingsInput: {
-     flex: 1,
-     fontFamily: 'WorkSans_400Regular',
-   },
-   section: {
-     marginBottom: 20,
-   },
-   sectionTitle: {
-     fontSize: 18,
-     fontWeight: 'bold',
-     marginBottom: 10,
-     fontFamily: 'WorkSans_700Bold',
-   },
-   ingredientRow: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     marginBottom: 10,
-   },
-   ingredientInput: {
-     flex: 2,
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     padding: 10,
-     marginRight: 10,
-     borderWidth: 1,
-     borderColor: '#ddd',
-     fontFamily: 'WorkSans_400Regular',
-   },
-   quantityInput: {
-     flex: 1,
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     padding: 10,
-     marginRight: 10,
-     borderWidth: 1,
-     borderColor: '#ddd',
-     fontFamily: 'WorkSans_400Regular',
-   },
-   addIngredientButton: {
-     alignSelf: 'flex-start',
-     marginTop: 10,
-   },
-   stepRow: {
-     flexDirection: 'row',
-     alignItems: 'flex-start',
-     marginBottom: 10,
-   },
-   stepInput: {
-     flex: 1,
-     backgroundColor: '#fff',
-     borderRadius: 8,
-     padding: 10,
-     marginRight: 10,
-     borderWidth: 1,
-     borderColor: '#ddd',
-     fontFamily: 'WorkSans_400Regular',
-     minHeight: 60,
-     textAlignVertical: 'top',
-   },
-   addStepButton: {
-     alignSelf: 'flex-start',
-     marginTop: 10,
-   },
-   removeRecipeButton: {
-     flexDirection: 'row',
-     alignItems: 'center',
-     justifyContent: 'center',
-     paddingVertical: 12,
-     backgroundColor: '#FFFFFF',
-     borderRadius: 8,
-     borderWidth: 1,
-     borderColor: '#ddd',
-     marginBottom: 20,
-   },
-   trashIcon: {
-     marginRight: 10,
-   },
-   removeRecipeText: {
-     color: '#FF4D4D',
-     fontWeight: 'bold',
-     fontFamily: 'WorkSans_700Bold',
-   },
-   publishButton: {
-     backgroundColor: '#FF9A16',
-     borderRadius: 8,
-     paddingVertical: 15,
-     alignItems: 'center',
-     marginBottom: 130,
-   },
-   publishButtonText: {
-     color: '#fff',
-     fontSize: 18,
-     fontWeight: 'bold',
-     fontFamily: 'WorkSans_700Bold',
-   },
+      <TouchableOpacity
+        style={[styles.pickerButton, { flexDirection: 'row', marginBottom: 15, justifyContent: 'space-between', alignItems: 'center' }]}
+        onPress={() => setShowPicker(true)}
+      >
+        <Text style={styles.pickerButtonText}>
+          {recipeType
+            ? recipeType.charAt(0).toUpperCase() + recipeType.slice(1)
+            : 'Seleccionar tipo de receta'}
+        </Text>
+        <Ionicons name="chevron-down" size={20} color="#555" />
+      </TouchableOpacity>
 
-   bottomNavigation: {
-    position: 'absolute',
-    bottom: 20,
-    left: 7,
-    right: 7,
-    borderRadius: 30,
-    backgroundColor: '#FFD091',
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#ddd',
-  },
-  navItem: {
-    padding: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  addButton: {
-    backgroundColor: '#FF9A16', // Color naranja similar
-    borderRadius: 30,
-    width: 35,
-    height: 35,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth:2,
-  },
- });
 
- export default CreateRecipeScreen;
+
+        <View style={styles.servingsContainer}>
+          <Ionicons name="person-outline" size={24} color="#555" style={styles.servingsIcon} />
+          <TextInput
+            style={styles.servingsInput}
+            placeholder="Cantidad de porciones"
+            keyboardType="number-pad"
+            value={servings}
+            onChangeText={setServings}
+          />
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Agregar ingredientes</Text>
+          {ingredients.map((ingredient, index) => (
+            <View key={index} style={styles.ingredientRow}>
+              <TextInput
+                style={styles.ingredientInput}
+                placeholder="ej. Comino"
+                value={ingredient.name}
+                onChangeText={(value) => handleIngredientChange(index, 'name', value)}
+              />
+              <TextInput
+                style={styles.quantityInput}
+                placeholder="ej. 200 g"
+                value={ingredient.quantity}
+                onChangeText={(value) => handleIngredientChange(index, 'quantity', value)}
+              />
+              {ingredients.length > 1 && (
+                <TouchableOpacity onPress={() => handleRemoveIngredient(index)}>
+                  <Ionicons name="close-circle-outline" size={24} color="#FF4D4D" />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addIngredientButton} onPress={handleAddIngredient}>
+            <Ionicons name="add-circle-outline" size={30} color="#5CB85C" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Agregar paso</Text>
+          {steps.map((step, index) => (
+            <View key={index} style={styles.stepRow}>
+              <TextInput
+                style={styles.stepInput}
+                placeholder={`ej. Agrega la sal lentamente`}
+                multiline
+                value={step}
+                onChangeText={(value) => handleStepChange(index, value)}
+              />
+              {steps.length > 1 && (
+                <TouchableOpacity onPress={() => handleRemoveStep(index)}>
+                  <Ionicons name="close-circle-outline" size={24} color="#FF4D4D" />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+          <TouchableOpacity style={styles.addStepButton} onPress={handleAddStep}>
+            <Ionicons name="add-circle-outline" size={30} color="#5CB85C" />
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity style={styles.removeRecipeButton}>
+          <Ionicons name="trash-outline" size={20} color="#FF4D4D" style={styles.trashIcon} />
+          <Text style={styles.removeRecipeText}>Eliminar receta</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.publishButton} onPress={handlePublishRecipe}>
+          <Text style={styles.publishButtonText}>Publicar</Text>
+        </TouchableOpacity>
+
+        {/* Modal Picker */}
+        <ModalSelector
+          visible={showPicker}
+          title="Selecciona el tipo de receta"
+          options={['Desayuno', 'Almuerzo', 'Cena']}
+          highlightedOption={recipeType.charAt(0).toUpperCase() + recipeType.slice(1)}
+          onClose={() => setShowPicker(false)}
+          onSelectOption={(option) => {
+            setRecipeType(option.toLowerCase());
+            setShowPicker(false);
+          }}
+      />
+
+
+      </ScrollView>
+
+      <NavBar />
+    </>
+  );
+};
+
+export default CreateRecipeScreen;

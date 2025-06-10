@@ -10,6 +10,9 @@ export default function Index() {
   const handleStart = () => {
     router.push('/register');
   };
+  const handleLogin = () => {
+    router.push('/home');
+  };
 
   return (
     <>
@@ -33,7 +36,7 @@ export default function Index() {
 
         <Text style={styles.loginText}>
           ¿Ya tienes una cuenta?{' '}
-          <Text style={styles.loginLink} >
+          <Text style={styles.loginLink} onPress={handleLogin}>
             Inicia sesión
           </Text>
         </Text>

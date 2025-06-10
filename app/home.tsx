@@ -3,13 +3,13 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, ScrollView,
 import styles from './styles/Styles';
 import { router, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import BottomNavigation from './components/navBar';
+ import LogoHeader from './components/logoHeader'; 
 
 
-// Importa tus fuentes si las estás utilizando
- // import { useFonts, ... } from '@expo-google-fonts/work-sans';
- // import AppLoading from 'expo-app-loading';
 
- // Importa los datos desde tus archivos JSON
+
+
  import featuredRecipesData from '../assets/data/featuredRecepies.json';
  import categoriesData from '../assets/data/categories.json';
 import { NavigationContainer } from '@react-navigation/native';
@@ -25,7 +25,7 @@ import { NavigationContainer } from '@react-navigation/native';
    const handleRecipePress = (recipeId: string) => {
      // Aquí iría la lógica para navegar a la pantalla de detalle de la receta
      console.log(`Receta tocada con ID: ${recipeId}`);
-     router.push('/RecepieDetailScreen'); // Cambia a la ruta correcta de tu pantalla de detalle
+     router.push('/recipe'); // Cambia a la ruta correcta de tu pantalla de detalle
      // Ejemplo de navegación usando expo-router:
      // navigation.navigate('RecipeDetail', { id: recipeId });
    };
@@ -52,12 +52,8 @@ import { NavigationContainer } from '@react-navigation/native';
   const Home = () => {
      return (
        <><ScrollView style={styles.containerHome} contentContainerStyle={{ paddingBottom: 80 }}>
-           <View style={styles.logoContainer}>
-               <Image
-                   source={require('../assets/images/logoWhite.png')}
-                   style={styles.logo}
-                   resizeMode="contain" />
-           </View>
+           <LogoHeader />
+
 
            <Image
                source={require('../assets/images/homeBanner.jpg')}
@@ -102,25 +98,7 @@ import { NavigationContainer } from '@react-navigation/native';
                ))}
            </ScrollView>
      </ScrollView>
-     <View style={[styles.bottomNavigation, { backgroundColor: '#FFFFFF' }]}>
-             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
-                 <Ionicons name="home-outline" size={24} color="#FF9A16" />
-             </TouchableOpacity>
-             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Search')}>
-                 <Ionicons name="search-outline" size={24} color="#333" />
-             </TouchableOpacity>
-             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('AddRecipe')}>
-                 <View style={styles.addButton}>
-                     <Ionicons name="add" size={32} color="#000000" />
-                 </View>
-             </TouchableOpacity>
-             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Bookmarks')}>
-                 <Ionicons name="book-outline" size={24} color="#333" />
-             </TouchableOpacity>
-             <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Profile')}>
-                 <Ionicons name="person-outline" size={24} color="#333" />
-             </TouchableOpacity>
-         </View>
+     <BottomNavigation />
      </>
  )};
 

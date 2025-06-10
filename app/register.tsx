@@ -19,20 +19,75 @@ export default function RegisterScreen() {
     setForm({ ...form, [field]: value });
   };
 
-  const handleSubmit = () => {
-    if (Object.values(form).some(v => v.trim() === '')) {
+  const handleSubmit = async () => {
+    const { email, username, password, confirmPassword } = form;
+  
+    // Validar campos vacíos
+    if (!email || !username || !password || !confirmPassword) {
       Alert.alert('Completa todos los campos');
-      router.push('/home');
       return;
     }
-    if (form.password !== form.confirmPassword) {
+  
+    // Validar formato de email simple
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      Alert.alert('Por favor, ingresa un email válido');
+      return;
+    }
+  
+    // Validar contraseña: al menos 6 caracteres, una mayúscula, una minúscula y un número
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+    if (!passwordRegex.test(password)) {
+      Alert.alert(
+        'La contraseña debe tener al menos 6 caracteres, incluyendo mayúsculas, minúsculas y números'
+      );
+      return;
+    }
+  
+    // Validar que las contraseñas coincidan
+    if (password !== confirmPassword) {
       Alert.alert('Las contraseñas no coinciden');
       return;
     }
-    // Aquí iría la lógica para enviar los datos
-    Alert.alert('Registro exitoso');
-    
+  
+    try {
+      // Paso 1: Registro parcial
+      const registerRes = await fetch('http://192.168.68.55:3000/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, alias: username }),
+      });
+  
+      if (!registerRes.ok) {
+        const error = await registerRes.json();
+        console.error('Error al registrar:', error);
+        Alert.alert('Error al registrar usuario');
+        return;
+      }
+  
+      // Paso 2: Completar contraseña
+      const completeRes = await fetch('http://192.168.68.55:3000/api/v1/auth/complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+  
+      if (!completeRes.ok) {
+        const error = await completeRes.json();
+        console.error('Error al completar registro:', error);
+        Alert.alert('Error al guardar la contraseña');
+        return;
+      }
+  
+      Alert.alert('Registro exitoso');
+      router.push('/home');
+    } catch (error) {
+      console.error('Error en registro:', error);
+      Alert.alert('Error de red. Intenta más tarde.');
+    }
   };
+  
+  
   
 
   return (
