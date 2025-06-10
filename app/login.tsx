@@ -81,9 +81,17 @@ const LoginScreen = () => {
   };
 
   const handleForgotPassword = () => {
-    console.log('Navegando a la pantalla de recuperación de contraseña.');
+    if (!mail) {
+      setMailError('Por favor, ingresa tu email primero');
+      return;
+    }
+  
+    router.push({
+      pathname: '/passwordReset',
+      params: { email: mail },
+    });
   };
-
+  
   return (
     <SafeAreaView style={loginStyles.safeArea}>
       <Image

@@ -93,6 +93,13 @@ import { StyleSheet, Dimensions } from 'react-native';
      fontFamily: 'WorkSans_400Regular',
      textAlign: 'center',
    },
+   emailResetText: {
+    color: '#000000',
+    fontSize: 20,
+    fontFamily: 'WorkSans_400Regular',
+    textAlign: 'center',
+    paddingBottom: 20,
+  },
    forgotPasswordLink: {
      color: '#FF9A16',
      fontSize: 15,
