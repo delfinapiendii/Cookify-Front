@@ -42,7 +42,7 @@ const BottomNavigation: React.FC = () => {
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('AddRecipe')}>
         <View style={styles.addButton}>
-          <Ionicons name="add" size={32} color={getIconColor('AddRecipe')} />
+          <Ionicons name="add" size={32} />
         </View>
       </TouchableOpacity>
       <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Bookmarks')}>

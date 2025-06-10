@@ -7,6 +7,7 @@ export const styles = StyleSheet.create({
     paddingTop: 58,
     paddingBottom: 60,
     paddingHorizontal: 20,
+    marginBottom: 20,
   },
 
   title: {
