@@ -17,6 +17,7 @@ import { SearchBar } from '@rneui/themed';
 import { FontAwesome } from '@expo/vector-icons';
 import recipesData from '../assets/data/recepie.json';
 import ModalSelector from './components/modalSelector';
+import RecipeGrid from './components/recipeGrid';
 
 const SearchScreen = () => {
   const navigation = useNavigation();
@@ -49,9 +50,9 @@ const SearchScreen = () => {
 
   return (
     <>
-               <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, backgroundColor: '#fff'}}>
     
-      <ScrollView style={[styles.containerHome, { paddingTop: 80, marginBottom: 80 }]}>
+      <ScrollView style={[styles.containerHome, { paddingTop: 80, marginBottom: 80, bottom: 40 }]}>
         <LogoHeader />
 
         <SearchBar
@@ -93,12 +94,21 @@ const SearchScreen = () => {
 
         {/* Resultados de búsqueda */}
         <Text style={styles.resultsCount}>700 Recetas Encontradas</Text>
+        <RecipeGrid
+          recipes={recipesData.map((r) => ({ ...r, rating: Number(r.rating) }))}
+          onRecipePress={(id) => {
+            console.log('Receta tocada:', id);
+          }}
+        />
+        {/* 
         <RecipeList
           recipes={recipesData.map((r) => ({ ...r, rating: Number(r.rating) }))}
           onRecipePress={(id) => {
             console.log('Receta tocada:', id);
           }}
         />
+        */}
+
       </ScrollView>
 
       {/* Modal Filtros */}

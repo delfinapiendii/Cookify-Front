@@ -7,7 +7,7 @@ export const styles = StyleSheet.create({
     paddingTop: 58,
     paddingBottom: 60,
     paddingHorizontal: 20,
-    marginBottom: 20,
+    marginBottom: 50,
   },
 
   title: {
@@ -127,24 +127,32 @@ export const styles = StyleSheet.create({
     marginTop: 10,
   },
 
+  
   stepRow: {
     flexDirection: 'row',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 10,
-  },
-
-  stepInput: {
-    flex: 1,
-    backgroundColor: '#fff',
     borderRadius: 8,
-    padding: 10,
-    marginRight: 10,
+    padding: 8,
     borderWidth: 1,
-    borderColor: '#ddd',
-    minHeight: 60,
-    textAlignVertical: 'top',
+    borderColor: '#eee',
   },
 
+ 
+  stepInput: {
+    flex: 1, // Hace que el input ocupe el espacio restante
+    minHeight: 40,
+    borderColor: '#ddd',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginRight: 10,
+    fontSize: 16,
+    color: '#333',
+    backgroundColor: '#fff',
+  },
+
+  
   addStepButton: {
     alignSelf: 'flex-start',
     marginTop: 10,
@@ -284,4 +292,46 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: '#FF4D4D',
   },
+  selectedImage: {
+    width: '100%',
+    height: 200,
+    borderRadius: 10,
+    marginBottom: 10,
+  },
+
+  stepImagePicker: {
+    width: 60, // Ancho fijo para el botón de la cámara
+    height: 60, // Alto fijo
+    borderRadius: 8,
+    backgroundColor: '#e0e0e0',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    overflow: 'hidden', // Para que la imagen se recorte si es más grande
+  },
+  stepCameraIconContainer: {
+    position: 'relative',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: '100%',
+    height: '100%',
+  },
+  stepAddIcon: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  stepSelectedImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover', // Asegura que la imagen cubra el área
+    borderRadius: 8,
+  },
+  inputError: {
+    borderColor: 'red',
+    borderWidth: 1,
+  },
+  
 });

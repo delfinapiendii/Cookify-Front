@@ -95,7 +95,7 @@ import { StyleSheet, Dimensions } from 'react-native';
    },
    emailResetText: {
     color: '#000000',
-    fontSize: 20,
+    fontSize: 15,
     fontFamily: 'WorkSans_400Regular',
     textAlign: 'center',
     paddingBottom: 20,

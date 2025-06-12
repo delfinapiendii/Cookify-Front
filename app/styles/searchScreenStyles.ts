@@ -5,7 +5,6 @@ const seacrhScreenStyles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FFFFFF',
     paddingTop: 58,
-    paddingBottom: 60,
     marginBottom: 90,
 
   },

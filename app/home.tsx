@@ -5,6 +5,7 @@ import { router, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavigation from './components/navBar';
  import LogoHeader from './components/logoHeader'; 
+ 
 
 
 
@@ -37,16 +38,17 @@ import { NavigationContainer } from '@react-navigation/native';
      // navigation.navigate('CategoryRecipes', { category: categoryId });
    };
 
-   const handleNavigationPress = (screen: string) => {
-    if (screen == 'Search') {
-      router.push('/SearchScreen'); // Corrected the typo in the path
-    }
-    if (screen == 'AddRecipe') {
-        router.push('/createRecepieScreen'); // Corrected the typo in the path
-      }
-    console.log(`Navegar a: ${screen}`);
-    // Ejemplo de navegación usando expo-router:
-    // navigation.navigate(screen);
+   const handleVerMas = () => {
+    // Serializa la lista de recetas destacadas
+    const recipesString = encodeURIComponent(JSON.stringify(featuredRecipesData)); 
+  
+    router.push({
+      pathname: '/viewMore', 
+      params: { 
+        recipes: recipesString, 
+        title: '¡Recetas que pueden gustarte!' 
+      },
+    });
   };
 
   const Home = () => {
@@ -67,7 +69,7 @@ import { NavigationContainer } from '@react-navigation/native';
            <View style={styles.newSection}>
                <Text style={styles.sectionTitle}>¡Recetas que pueden gustarte!</Text>
 
-               <TouchableOpacity style={styles.verMasButton}>
+               <TouchableOpacity style={styles.verMasButton} onPress={handleVerMas}>
                    <Text style={styles.verMasText}>Ver más</Text>
                </TouchableOpacity>
            </View>

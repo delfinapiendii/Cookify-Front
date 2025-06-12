@@ -12,10 +12,10 @@ import { Ionicons } from '@expo/vector-icons';
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import { router, useNavigation, useLocalSearchParams } from 'expo-router';
-import CustomAlertModal from './components/alert'; // Tu modal reutilizable
+import CustomAlertModal from './components/alert'; 
 
 
-import { loginStyles } from './styles/loginStyles'; // Asegúrate de que esta ruta sea correcta
+import { loginStyles } from './styles/loginStyles'; 
 
 const PasswordReset = () => {
   const [code, setCode] = useState('');
@@ -24,17 +24,15 @@ const PasswordReset = () => {
   const [IsSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
   
-  // Nuevos estados para la nueva contraseña
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
   const [newPasswordError, setNewPasswordError] = useState('');
   const [confirmNewPasswordError, setConfirmNewPasswordError] = useState('');
 
-  // Estado para controlar la fase: 'verifyCode' o 'setNewPassword'
   const [currentPhase, setCurrentPhase] = useState('verifyCode');
 
   const navigation = useNavigation();
-  const { email } = useLocalSearchParams(); // Recibir el email
+  const { email } = useLocalSearchParams(); 
 
   const [fontsLoaded] = useFonts({
     WorkSans_400Regular,
@@ -67,11 +65,11 @@ const PasswordReset = () => {
           setEmailSent(true);
         } else {
           console.error('Error al enviar código:', data.message);
-          Alert.alert('Error', 'No se pudo enviar el código al email.');
+          //OOPS
         }
       } catch (error) {
         console.error('Error en la petición:', error);
-        Alert.alert('Error', 'No se pudo conectar con el servidor.');
+        //OOPS
       }
     };
 
@@ -101,7 +99,6 @@ const PasswordReset = () => {
       if (response.ok) {
         console.log('Código verificado:', data.message);
   
-        // Ir a pantalla para ingresar nueva contraseña
         setCurrentPhase('setNewPassword');
       } else {
         console.error('Código incorrecto:', data.message);
@@ -109,11 +106,10 @@ const PasswordReset = () => {
       }
     } catch (error) {
       console.error('Error en la petición de verificación:', error);
-      Alert.alert('Error', 'No se pudo conectar con el servidor.');
-    }
+    //OOPS
+        }
   };
   const handleSetNewPassword = async () => {
-    // Reiniciar errores de contraseña
     setNewPasswordError('');
     setConfirmNewPasswordError('');
 
@@ -128,21 +124,19 @@ const PasswordReset = () => {
       hasPassError = true;
     }
 
-    // Validar contraseña: al menos 6 caracteres, una mayúscula, una minúscula y un número
     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
     if (newPassword && !passwordRegex.test(newPassword)) {
       setNewPasswordError('La contraseña debe tener al menos 6 caracteres, incluyendo mayúsculas, minúsculas y números');
       hasPassError = true;
     }
   
-    // Validar que las contraseñas coincidan
     if (newPassword && confirmNewPassword && newPassword !== confirmNewPassword) {
       setConfirmNewPasswordError('Las contraseñas no coinciden');
       hasPassError = true;
     }
 
     if (hasPassError) {
-      return; // Detener si hay errores de validación de contraseña
+      return; 
     }
 
     try {
@@ -160,11 +154,12 @@ const PasswordReset = () => {
       if (response.ok) {
         setIsSuccessModalVisible(true);
       } else {
-        Alert.alert('Error', data.message || 'No se pudo restablecer la contraseña.');
+        console.error('No se pudo restablecer la contraseña:', data.message);
+
       }
     } catch (error) {
       console.error('Error en la petición de restablecimiento:', error);
-      Alert.alert('Error', 'No se pudo conectar con el servidor.');
+      //OOPS
     }
   };
 

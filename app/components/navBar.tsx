@@ -16,6 +16,8 @@ const BottomNavigation: React.FC = () => {
       router.push('/home');
     } else if (screen === 'Bookmarks') {
     } else if (screen === 'Profile') {
+      router.push('/profile');
+
     }
   };
 
@@ -25,7 +27,7 @@ const BottomNavigation: React.FC = () => {
       (screen === 'Search' && pathname === '/SearchScreen') ||
       (screen === 'AddRecipe' && pathname === '/createRecepieScreen') ||
       (screen === 'Bookmarks' && pathname === '/BookmarksScreen') ||
-      (screen === 'Profile' && pathname === '/ProfileScreen')
+      (screen === 'Profile' && pathname === '/profile')
     ) {
       return '#FF9A16'; // activo
     }

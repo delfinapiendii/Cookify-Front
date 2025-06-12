@@ -39,6 +39,16 @@ const LoginScreen = () => {
   if (!fontsLoaded) {
     return null;
   }
+  const decodeJWT = (token) => {
+    try {
+      const payload = token.split('.')[1]; // El 2do segmento es el payload
+      const decodedPayload = JSON.parse(atob(payload));
+      return decodedPayload;
+    } catch (error) {
+      console.error('Error al decodificar JWT:', error);
+      return null;
+    }
+  };
 
   const handleLogin = async () => {
     setMailError('');
@@ -61,6 +71,17 @@ const LoginScreen = () => {
 
       if (response.ok) {
         console.log('Login exitoso:', data);
+        const token = data.token;
+
+        try {
+          const decoded = decodeJWT(data.token);
+          console.log('Decoded token:', decoded);
+          await AsyncStorage.setItem('userid', decoded.id);
+
+        } catch (error) {
+          console.error('Error al decodificar el token:', error);
+        }
+
         await AsyncStorage.setItem('token', data.token);
         router.push('/home');
       } else {
