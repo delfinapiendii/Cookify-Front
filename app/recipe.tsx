@@ -1,349 +1,324 @@
 import React, { useState, useEffect } from 'react';
- import { ScrollView, View, Text, Image, StyleSheet, TouchableOpacity, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
- import { Ionicons } from '@expo/vector-icons';
- import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
- import * as SplashScreen from 'expo-splash-screen';
- import { styles } from './styles/recipeStyles'; 
-
- import { useLocalSearchParams, useNavigation } from 'expo-router'; 
+import { ScrollView, View, Text, Image, TouchableOpacity, TextInput, Modal, ActivityIndicator, Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
+import * as SplashScreen from 'expo-splash-screen';
+import { styles } from './styles/recipeStyles';
+import { useLocalSearchParams, useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
- // Definimos la interfaz para la estructura de la receta que viene de tu API
- interface Ingredient {
-   cantidad: number;
-   ingrediente: string;
- }
+interface Ingredient {
+  cantidad: number;
+  ingrediente: string;
+}
 
- interface Step {
-   orden: number;
-   descripcion: string;
-   imagenUrl: string | null;
- }
+interface Step {
+  orden: number;
+  descripcion: string;
+  imagenUrl: string | null;
+}
 
- interface User {
-   id: string;
-   email: string;
-   alias: string;
- }
+interface User {
+  id: string;
+  email: string;
+  alias: string;
+}
 
- interface Comment {
-   contenido: any;
-   usuario: any;
-   author: string; 
-   text: string;    
- }
+interface Comment {
+  contenido: any;
+  usuario: any;
+  author: string;
+  text: string;
+}
 
- interface ApiRecipe {
-   id: number; 
-   titulo: string;
-   descripcion: string;
-   categoria: string;
-   estado: string;
-   porciones: number;
-   usuario: User;
-   composiciones: Ingredient[]; // Asegúrate de que este campo sea 'composiciones' según tu backend
-   pasos: Step[];
-   imagenes: string[]; 
-   valoracionPromedio: number | null;
-   comentarios: Comment[];
- }
+interface ApiRecipe {
+  id: number;
+  titulo: string;
+  descripcion: string;
+  categoria: string;
+  estado: string;
+  porciones: number;
+  usuario: User;
+  composiciones: Ingredient[];
+  pasos: Step[];
+  imagenes: string[];
+  valoracionPromedio: number | null;
+  comentarios: Comment[];
+}
 
- const RecipeDetailScreen = () => { 
-     const { id: recipeIdParam } = useLocalSearchParams<{ id: string }>(); 
-     const navigation = useNavigation();
+const RecipeDetailScreen = () => {
+  const { id: recipeIdParam } = useLocalSearchParams<{ id: string }>();
+  const navigation = useNavigation();
 
-     const [recipe, setRecipe] = useState<ApiRecipe | null>(null); 
-     const [loading, setLoading] = useState(true); 
-     const [error, setError] = useState<string | null>(null); 
+  const [recipe, setRecipe] = useState<ApiRecipe | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-     const [servings, setServings] = useState(0); 
-     const [isBookmarked, setIsBookmarked] = useState(false);
-     const [userRating, setUserRating] = useState(0);
-     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-     const [tempRating, setTempRating] = useState(0);
-     const [comment, setComment] = '';
+  const [servings, setServings] = useState(0);
+  const [isBookmarked, setIsBookmarked] = useState(false);
+  const [userRating, setUserRating] = useState(0);
+  const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+  const [tempRating, setTempRating] = useState(0);
+  const [comment, setComment] = useState('');
 
+  const [fontsLoaded] = useFonts({
+    WorkSans_400Regular,
+    WorkSans_700Bold,
+  });
 
-     const [fontsLoaded] = useFonts({
-         WorkSans_400Regular,
-         WorkSans_700Bold,
-     });
+  useEffect(() => {
+    if (!fontsLoaded) {
+      SplashScreen.preventAutoHideAsync();
+    } else {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
 
-     useEffect(() => {
-         if (!fontsLoaded) {
-             SplashScreen.preventAutoHideAsync();
-         } else {
-             SplashScreen.hideAsync();
-         }
-     }, [fontsLoaded]);
+  useEffect(() => {
+    const fetchRecipeDetails = async () => {
+      if (!recipeIdParam) {
+        setError('No se proporcionó un ID de receta.');
+        setLoading(false);
+        return;
+      }
 
-     useEffect(() => {
-         const fetchRecipeDetails = async () => {
-             if (!recipeIdParam) {
-                 setError('No se proporcionó un ID de receta.');
-                 setLoading(false);
-                 return;
-             }
+      try {
+        const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/${recipeIdParam}`);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        const data: ApiRecipe = await response.json();
 
-             try {
-                 const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/${recipeIdParam}`);
-                 if (!response.ok) {
-                     throw new Error(`HTTP error! status: ${response.status}`);
-                 }
-                 const data: ApiRecipe = await response.json();
-                 
-                 setRecipe(data);
-                 setServings(data.porciones || 1); 
-                 setUserRating(data.valoracionPromedio || 0); 
-                 
-             } catch (err: any) {
-                 console.error('Error fetching recipe details:', err);
-                 setError('No se pudo cargar la receta. Por favor, inténtalo de nuevo más tarde.');
-                 Alert.alert('Error', 'No se pudo cargar la receta. ' + err.message);
-             } finally {
-                 setLoading(false);
-             }
-         };
-
-         fetchRecipeDetails();
-     }, [recipeIdParam]); 
-
-     if (!fontsLoaded) {
-         return null;
-     }
-
-     if (loading) {
-         return (
-             <View style={styles.loadingContainer}>
-                 <ActivityIndicator size="large" color="#FF9A16" />
-                 <Text>Cargando receta...</Text>
-             </View>
-         );
-     }
-
-     if (error || !recipe) { // Añadido !recipe para manejar el caso donde recipe es null después de un error
-         return (
-             <View style={styles.errorContainer}>
-                 <Text style={styles.errorText}>{error || 'Receta no encontrada.'}</Text>
-                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonError}>
-                     <Text style={styles.backButtonErrorText}>Volver</Text>
-                 </TouchableOpacity>
-             </View>
-         );
-     }
-
-     const renderStars = (rating: number, onStarPress?: (value: number) => void) => {
-         const stars = [];
-         for (let i = 1; i <= 5; i++) {
-             const starIcon = i <= rating ? 'star' : 'star-outline';
-             const starColor = i <= rating ? '#FFC107' : '#888';
-             stars.push(
-                 <TouchableOpacity key={`star-${i}`} onPress={() => onStarPress?.(i)}>
-                     <Ionicons name={starIcon} size={30} color={starColor} />
-                 </TouchableOpacity>
-             );
-         }
-         return stars;
-     };
-
-     const modifiedRecipes = async () => {
-        try {
-            console.log('--- INICIO modifiedRecipes ---');
-            console.log('Servings actual antes de la llamada a escalar:', servings); // Verifica el valor de servings
-            
-            const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/${recipeIdParam}/escalar?porciones=${servings}`);
-            
-            if (!response.ok) {
-                const errorText = await response.text(); // Captura el texto del error
-                console.error('Error HTTP al escalar:', response.status, errorText);
-                throw new Error(`HTTP error! status: ${response.status}. Detalle: ${errorText}`);
-            }
-            
-            const data = await response.json(); 
-            console.log('RESPUESTA DE LA API /escalar:', data); // <--- CLAVE: qué devuelve la API
-            
-            setRecipe(prevRecipe => {
-                if (!prevRecipe) return null;
-              
-                const composicionesAdaptadas = data.ingredientes?.map((ing: any) => ({
-                  cantidad: ing.cantidad,
-                  ingrediente: ing.nombre,
-                }));
-              
-                return {
-                  ...prevRecipe,
-                  composiciones: composicionesAdaptadas || prevRecipe.composiciones,
-                  valoracionPromedio:
-                    data.valoracionPromedio !== undefined
-                      ? data.valoracionPromedio
-                      : prevRecipe.valoracionPromedio,
-                };
-              });
-              
-            
-        } catch (err: any) {
-            console.error('Error en modifiedRecipes:', err);
-            Alert.alert('Error de escalado', 'No se pudo escalar la receta. ' + err.message);
-        } finally {
-            console.log('--- FIN modifiedRecipes ---');
-        }
+        setRecipe(data);
+        setServings(data.porciones || 1);
+        setUserRating(data.valoracionPromedio || 0);
+      } catch (err: any) {
+        setError('No se pudo cargar la receta. Por favor, inténtalo de nuevo más tarde.');
+        Alert.alert('Error', 'No se pudo cargar la receta. ' + err.message);
+      } finally {
+        setLoading(false);
+      }
     };
 
-     const decreaseServings = () => {
-         if (servings > 1) {
-             setServings(servings - 1);
-             // Llama a modifiedRecipes después de actualizar servings para que use el nuevo valor
-             // Puedes considerar usar un debounce si las llamadas son muy rápidas
-             setTimeout(modifiedRecipes, 100); // Pequeño retraso para que el estado se actualice
-         }
-     };
-
-     const increaseServings = () => {
-         setServings(servings + 1);
-         // Llama a modifiedRecipes después de actualizar servings para que use el nuevo valor
-         // Puedes considerar usar un debounce si las llamadas son muy rápidas
-         setTimeout(modifiedRecipes, 100); // Pequeño retraso para que el estado se actualice
-     };
-
-     const toggleBookmark = async () => {
-        const token = await AsyncStorage.getItem('token');
+    const checkIfBookmarked = async () => {
+      try {
         const userId = await AsyncStorage.getItem('userid');
-    
-        if (!token || !userId) {
-            Alert.alert("Error", "No estás autenticado.");
-            return;
-        }
-    
-        const parsedRecipeId = parseInt(recipeIdParam);
-        if (isNaN(parsedRecipeId)) {
-            Alert.alert("Error", "ID de receta inválido.");
-            return;
-        }
-    
-        const nuevaAccion = !isBookmarked;
-        setIsBookmarked(nuevaAccion);
-    
-        try {
-            if (nuevaAccion) {
-                const response = await fetch('http://10.0.2.2:3000/api/v1/favoritos', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        recetaId: parsedRecipeId,
-                        usuarioId: userId,
-                    }),
-                });
-    
-                const data = await response.json();
-                console.log('Receta faveada:', data.message);
-            } else {
-                const response = await fetch(`http://10.0.2.2:3000/api/v1/favoritos/${userId}/${parsedRecipeId}`, {
-                    method: 'DELETE',
-                    headers: {
-                        Authorization: `Bearer ${token}`,
-                    },
-                });
-    
-                if (response.status === 200 || response.status === 204) {
-                    console.log('Receta desfaveada correctamente');
-                } else {
-                    const data = await response.text(); // texto, por si hay mensaje de error
-                    console.error('Error desfaveando:', response.status, data);
-                }
-            }
-        } catch (err) {
-            console.error('Error en toggleBookmark:', err);
-            Alert.alert('Error', 'No se pudo modificar el favorito.');
-        }
-    };
-    
-     const openRatingModal = () => {
-         setIsRatingModalVisible(true);
-         setTempRating(userRating);
-     };
-
-     const closeRatingModal = () => {
-         setIsRatingModalVisible(false);
-     };
-
-     const confirmRating = async () => {
-         setUserRating(tempRating);
-         console.log('User rated:', tempRating);
-         const token = await AsyncStorage.getItem('token');
-         const userId = await AsyncStorage.getItem('userid');
-    
-         try {
-                const parsedRecipeId = parseInt(recipeIdParam); // Define parsedRecipeId here
-                if (isNaN(parsedRecipeId)) {
-                    Alert.alert("Error", "ID de receta inválido.");
-                    return;
-                }
-
-                const response = await fetch('http://10.0.2.2:3000/api/v1/valoraciones', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        Authorization: `Bearer ${token}`,
-                    },
-                    body: JSON.stringify({
-                        recetaId: parsedRecipeId,
-                        usuarioId: userId,
-                        puntaje:tempRating,
-                    }),
-                });
-    
-                const data = await response.json();
-                console.log('Receta valorada:', data.message);
-            } catch (err) {
-                console.error('Error en valoracion:', err);
-                Alert.alert('Error', 'No se pudo modificar el favorito.');
-            }
-         closeRatingModal();
-     };
-
-     const postComment = async () => {
-        console.log('User commented:', comment);
         const token = await AsyncStorage.getItem('token');
-        const userId = await AsyncStorage.getItem('userid');
+        if (!userId || !recipeIdParam) return;
 
-   {/*
-        try {
-               const parsedRecipeId = parseInt(recipeIdParam); // Define parsedRecipeId here
-               if (isNaN(parsedRecipeId)) {
-                   Alert.alert("Error", "ID de receta inválido.");
-                   return;
-               }
+        const response = await fetch(`http://10.0.2.2:3000/api/v1/favoritos/usuario/${userId}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-               const response = await fetch('http://10.0.2.2:3000/api/v1/valoraciones', {
-                   method: 'POST',
-                   headers: {
-                       'Content-Type': 'application/json',
-                       Authorization: `Bearer ${token}`,
-                   },
-                   body: JSON.stringify({
-                       recetaId: parsedRecipeId,
-                       usuarioId: userId,
-                       puntaje:tempRating,
-                   }),
-               });
-   
-               const data = await response.json();
-               console.log('Receta valorada:', data.message);
-           } catch (err) {
-               console.error('Error en valoracion:', err);
-               Alert.alert('Error', 'No se pudo modificar el favorito.');
-           }
-        closeRatingModal();*/ }
+        if (!response.ok) return;
+
+        const favoritos = await response.json();
+        const recetaIdNumerico = parseInt(recipeIdParam);
+        const estaFaveado = favoritos.some((receta: any) => receta.id === recetaIdNumerico);
+        setIsBookmarked(estaFaveado);
+      } catch {}
     };
 
-     const mainImageUrl = recipe.imagenes && recipe.imagenes.length > 0
-         ? recipe.imagenes[0]
-         : 'https://via.placeholder.com/400x200?text=No+Image';
+    checkIfBookmarked();
+    fetchRecipeDetails();
+  }, [recipeIdParam]);
 
-     return (
+  if (!fontsLoaded) return null;
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#FF9A16" />
+        <Text>Cargando receta...</Text>
+      </View>
+    );
+  }
+
+  if (error || !recipe) {
+    return (
+      <View style={styles.errorContainer}>
+        <Text style={styles.errorText}>{error || 'Receta no encontrada.'}</Text>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButtonError}>
+          <Text style={styles.backButtonErrorText}>Volver</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
+  const renderStars = (rating: number, onStarPress?: (value: number) => void) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      const starIcon = i <= rating ? 'star' : 'star-outline';
+      const starColor = i <= rating ? '#FFC107' : '#888';
+      stars.push(
+        <TouchableOpacity key={`star-${i}`} onPress={() => onStarPress?.(i)}>
+          <Ionicons name={starIcon} size={30} color={starColor} />
+        </TouchableOpacity>
+      );
+    }
+    return stars;
+  };
+
+  const modifiedRecipes = async () => {
+    try {
+      const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/${recipeIdParam}/escalar?porciones=${servings}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`HTTP error! status: ${response.status}. Detalle: ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      setRecipe(prevRecipe => {
+        if (!prevRecipe) return null;
+
+        const composicionesAdaptadas = data.ingredientes?.map((ing: any) => ({
+          cantidad: ing.cantidad,
+          ingrediente: ing.nombre,
+        }));
+
+        return {
+          ...prevRecipe,
+          composiciones: composicionesAdaptadas || prevRecipe.composiciones,
+          valoracionPromedio:
+            data.valoracionPromedio !== undefined
+              ? data.valoracionPromedio
+              : prevRecipe.valoracionPromedio,
+        };
+      });
+    } catch (err: any) {
+      Alert.alert('Error de escalado', 'No se pudo escalar la receta. ' + err.message);
+    }
+  };
+
+  const decreaseServings = () => {
+    if (servings > 1) {
+      setServings(servings - 1);
+      setTimeout(modifiedRecipes, 100);
+    }
+  };
+
+  const increaseServings = () => {
+    setServings(servings + 1);
+    setTimeout(modifiedRecipes, 100);
+  };
+
+  const toggleBookmark = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const userId = await AsyncStorage.getItem('userid');
+    if (!token || !userId) {
+      Alert.alert("Error", "No estás autenticado.");
+      return;
+    }
+
+    const parsedRecipeId = parseInt(recipeIdParam);
+    if (isNaN(parsedRecipeId)) {
+      Alert.alert("Error", "ID de receta inválido.");
+      return;
+    }
+
+    const nuevaAccion = !isBookmarked;
+    setIsBookmarked(nuevaAccion);
+
+    try {
+      if (nuevaAccion) {
+        await fetch('http://10.0.2.2:3000/api/v1/favoritos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            recetaId: parsedRecipeId,
+            usuarioId: userId,
+          }),
+        });
+      } else {
+        await fetch(`http://10.0.2.2:3000/api/v1/favoritos/${userId}/${parsedRecipeId}`, {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+      }
+    } catch {
+      Alert.alert('Error', 'No se pudo modificar el favorito.');
+    }
+  };
+
+  const openRatingModal = () => {
+    setIsRatingModalVisible(true);
+    setTempRating(userRating);
+  };
+
+  const closeRatingModal = () => {
+    setIsRatingModalVisible(false);
+  };
+
+  const confirmRating = async () => {
+    setUserRating(tempRating);
+    const token = await AsyncStorage.getItem('token');
+    const userId = await AsyncStorage.getItem('userid');
+
+    try {
+      const parsedRecipeId = parseInt(recipeIdParam);
+      if (isNaN(parsedRecipeId)) {
+        Alert.alert("Error", "ID de receta inválido.");
+        return;
+      }
+
+      await fetch('http://10.0.2.2:3000/api/v1/valoraciones', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recetaId: parsedRecipeId,
+          usuarioId: userId,
+          puntaje: tempRating,
+        }),
+      });
+    } catch {
+      Alert.alert('Error', 'No se pudo valorar la receta.');
+    }
+
+    closeRatingModal();
+  };
+
+  const postComment = async () => {
+    const token = await AsyncStorage.getItem('token');
+    const userId = await AsyncStorage.getItem('userid');
+
+    try {
+      const parsedRecipeId = parseInt(recipeIdParam);
+      await fetch('http://10.0.2.2:3000/api/v1/comentarios', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          recetaId: parsedRecipeId,
+          usuarioId: userId,
+          contenido: comment,
+        }),
+      });
+
+      setComment('');
+    } catch {
+      Alert.alert('Error', 'No se pudo enviar el comentario.');
+    }
+  };
+
+  const mainImageUrl =
+    recipe.imagenes && recipe.imagenes.length > 0
+      ? recipe.imagenes[0]
+      : 'https://via.placeholder.com/400x200?text=No+Image';
+
+  return (
          <ScrollView style={styles.container}>
              <View style={styles.imageContainer}>
                  <Image source={{ uri: mainImageUrl }} style={styles.recipeImage} resizeMode="cover" />
@@ -440,6 +415,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
                              style={styles.commentInput}
                              placeholder="Añadir un comentario..."
                              value={comment}
+                             onChangeText={setComment}
                          />
                          <TouchableOpacity style={styles.sendButton} onPress={postComment}>
                              <Ionicons name="send" size={24} color="#FF9A16" />
