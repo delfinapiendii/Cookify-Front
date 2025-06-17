@@ -1,7 +1,12 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
 import { Stack, useRouter } from "expo-router";
 import styles from './styles/Styles'; // Importa los estilos
+import defaultRecipes from '../assets/data/recepieData.json';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { loadDefaultRecipes } from './loadDefaultRecipes'; // ✅ Importás tu función
+
+
 
 
 export default function Index() {
@@ -13,6 +18,12 @@ export default function Index() {
   const handleLogin = () => {
     router.push('/login');
   };
+  useEffect(() => {
+    const fetchRecipes = async () => {
+      await loadDefaultRecipes();
+    };
+    fetchRecipes();
+  }, []);
 
   return (
     <>

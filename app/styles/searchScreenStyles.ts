@@ -3,9 +3,8 @@ import { StyleSheet } from 'react-native';
 const seacrhScreenStyles = StyleSheet.create({
   containerHome: {
     flex: 1,
-    backgroundColor: '#FFFFFF',
     paddingTop: 58,
-    marginBottom: 90,
+    marginBottom: 110,
 
   },
   searchBarContainer: {

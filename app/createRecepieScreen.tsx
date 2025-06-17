@@ -90,7 +90,7 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
     const newSteps = [...steps];
     newSteps[index].description = value; // CAMBIO AQUÍ
     setSteps(newSteps);
-  };   
+  };    
 
    const handleRemoveStep = (index: number) => {
      const newSteps = steps.filter((_, i) => i !== index);
@@ -212,6 +212,14 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
       }
       console.log(recipeName, description, userId,steps);
       const token = await AsyncStorage.getItem('token');
+      console.log("Payload que se enviará:", JSON.stringify({
+        pasos: steps.map((step, index) => ({
+          orden: index + 1,
+          descripcion: String(step.description),
+          ...(step.imageUrl && { imagenUrl: String(step.imageUrl) }),
+        })),
+      }, null, 2));
+      
   
       // Realiza la solicitud para publicar la receta
       const response = await fetch('http://10.0.2.2:3000/api/v1/recetas', {
@@ -233,7 +241,9 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
           })),
           pasos: steps.map((step, index) => ({
             orden: index + 1, // Asigna un número secuencial a cada paso
-            descripcion: String(step),
+            descripcion: step.description,
+            ...(step.imageUrl && { imagenUrl: step.imageUrl }), // opcional si tiene imagen
+
           })),
           imagenes: [imageUrl || (image ? image.uri : '')], // Usa imageUrl si está disponible, o la URI de la imagen local
           // Si no hay imagen, puedes manejarlo como desees (por ejemplo, enviar un array vacío o un valor por defecto)

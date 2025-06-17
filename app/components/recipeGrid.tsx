@@ -13,7 +13,7 @@ const cardWidth = (width - cardMargin * (numColumns + 1)) / numColumns; // Calcu
 interface Recipe {
   id: string;
   title: string;
-  imageUrl: string;
+  image: string;
   rating: number;
   chef: string; // Asumiendo que 'chef' es el nombre de usuario
 }
@@ -34,23 +34,32 @@ const RecipeGrid: React.FC<Props> = ({ recipes, onRecipePress }) => {
           onPress={() => onRecipePress?.(recipe.id)}
         >
           <View style={styles.imageContainer}>
-          <Image 
-            source={{ uri: recipe.imageUrl }} 
-            style={styles.recipeGridImage} 
-            resizeMode="contain" // <-- CAMBIA AQUÍ
-          />        </View>
+            <Image 
+              source={{ uri: recipe.image }} 
+              style={styles.recipeGridImage} 
+              resizeMode="cover" // o "contain", según el diseño que quieras
+            />
+          </View>
+
           <View style={styles.recipeGridInfo}>
-            <Text 
+          <Text 
               style={[styles.recipeGridTitle, { fontFamily: 'WorkSans_400Regular' }]} 
-              numberOfLines={2} // Limita el título a 2 líneas si es muy largo
+              numberOfLines={2}
             >
-              {recipe.title}
+              {typeof recipe.title === 'string' && recipe.title.trim() !== '' 
+                ? recipe.title 
+                : 'Receta sin título'}
             </Text>
+
             <View style={styles.recipeGridRatingContainer}>
-              <Text style={styles.recipeGridRating}>{recipe.rating}</Text>
-              <Ionicons name="star" size={16} color="#FFC107" />
+              <Text style={styles.recipeGridRating}>
+                  {typeof recipe.rating === 'number' ? recipe.rating.toFixed(1) : '0.0'}
+              </Text>
+
+              <Ionicons name="star" size={16} color="#00000" />
             </View>
-            <Text style={styles.recipeGridChef}>@{recipe.chef}</Text>
+            <Text style={styles.recipeGridChef}>@{recipe.chef ?? 'Chef'}</Text>
+
           </View>
         </TouchableOpacity>
       ))}

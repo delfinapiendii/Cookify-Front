@@ -185,7 +185,7 @@ centerlogo: {
   },
 
   featuredRecipesContainer: {
-    paddingHorizontal: 15,
+    paddingHorizontal: 20,
     marginBottom: 20,
   },
   recipeCard: {
@@ -217,6 +217,7 @@ centerlogo: {
   categoriesContainer: {
     paddingHorizontal: 15,
     marginBottom: 20,
+    paddingRight :40,
   },
 
   categoryCard: {

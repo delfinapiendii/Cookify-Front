@@ -233,4 +233,56 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'WorkSans_400Regular',
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+},
+errorContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    backgroundColor: '#fff',
+},
+errorText: {
+    fontSize: 18,
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 20,
+},
+backButtonError: {
+    backgroundColor: '#FF9A16',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+},
+backButtonErrorText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+},
+// Estilos para imágenes de pasos (añade estos a tu styles/recipeStyles.ts si no los tienes)
+stepContainer: {
+    marginBottom: 10,
+    width:'100%',
+
+},
+stepImage: {
+    borderRadius: 8,
+    marginTop: 10,
+    height: 200,
+    resizeMode: 'cover',
+    width:'100%',
+    backgroundColor: '#eee',
+    aspectRatio: 4 / 3,
+    justifyContent:'center',
+},
+noCommentsText: {
+    color: '#666',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 10,
+}
  });

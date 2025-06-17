@@ -35,19 +35,19 @@ const styles = StyleSheet.create({
     // ... dar un height fijo a este contenedor
   },
   recipeGridImage: {
+    height: 157,
     width: 160,
+
     alignContent: 'center', // <-- Esto se puede quitar, no tiene efecto aquí
-    height: 160,
     borderRadius: 10,
     borderTopRightRadius: 10,
-    borderWidth: 1,
   },
   recipeGridInfo: {
     padding: 10,
     paddingTop: 8,
   },
   recipeGridTitle: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: 'bold',
     marginBottom: 5,
     color: '#333',
