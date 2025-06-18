@@ -5,10 +5,9 @@ import { router, useNavigation } from 'expo-router'; // useNavigation no se est�
 import { Ionicons } from '@expo/vector-icons';
 import BottomNavigation from './components/navBar';
 import LogoHeader from './components/logoHeader'; 
-import featuredRecipesData from '../assets/data/featuredRecepies.json';
 import categoriesData from '../assets/data/categories.json';
-import CustomAlertModal from './components/alert'; // Tu modal reutilizable
-import { loadDefaultRecipes } from './loadDefaultRecipes'; // ✅ Importás tu función
+import CustomAlertModal from './components/alert'; 
+import { loadDefaultRecipes } from './loadDefaultRecipes'; 
 
 
 
