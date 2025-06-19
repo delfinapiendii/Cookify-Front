@@ -19,7 +19,12 @@ import { FontAwesome } from '@expo/vector-icons';
 import ModalSelector from './components/modalSelector';
 import RecipeGrid from './components/recipeGrid';
 import CustomAlertModal from './components/alert'; // Tu modal reutilizable
-
+import {
+  searchByFilter,
+  searchRecipesByTitle,
+  useRecipes,
+  fetchRecipes
+} from '../hooks/hooks';
 
 const SearchScreen = () => {
   const navigation = useNavigation();
@@ -49,37 +54,12 @@ const SearchScreen = () => {
   }, [fontsLoaded]);
 
   const updateSearch = async (text: string) => {
-    setSearchQuery(text); // Actualiza el estado
+    setSearchQuery(text);
     if (filter === undefined) {
-      try {
-        const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/search?titulo=${text}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-        });
-    
-        const data = await response.json();
-        if (response.ok) {
-          const formatted = data.map((r) => ({
-            id: r.id,
-            title: r.titulo,
-            image: r.imagenes[0],
-            rating: r.valoracionPromedio || 0,
-            chef: r.usuario?.alias || 'Desconocido',
-          }));
-          setRecipes(formatted); // Asignar las recetas obtenidas al estado
-        } else {
-          //setIsErrorSearchModalVisible(true); 
-        }
-      } catch (error) {
-        console.error('Error en la petición de recetas filtradas:', error);
-        fetchRecipes(); // Si no hay filtro, cargar todas las recetas
-      }
+      searchRecipesByTitle(searchQuery,setRecipes);
     }
     else{
       filterRecepies(filter);
-
     }
   };
 
@@ -87,63 +67,17 @@ const SearchScreen = () => {
   const toggleSortModal = () => setSortModalVisible(!isSortModalVisible);
 
   useEffect(() => {
-    fetchRecipes();
-  }, []); // Arreglo de dependencias vacío para que se ejecute solo una vez
-  const fetchRecipes = async () => {
+    fetchRecipes(setRecipes);
+  }, []); 
+ 
+  const hookfilter = async (filterurl: string) => {
     try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/recetas', {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        const formatted = data.map((r) => ({
-          id: r.id,
-          title: r.titulo,
-          //description: r.descripcion,
-          image: r.imagenes[0],
-          rating: r.valoracionPromedio || 0,
-          //category: r.categoria,
-          chef: r.usuario?.alias || 'Desconocido',
-        }));
-        setRecipes(formatted); // Asignar las recetas obtenidas al estado
-      } else {
-        console.error('Error al obtener recetas:', data.message);
+      searchByFilter(filterurl,searchQuery,setRecipes);
+      if (recipes.length === 0){
       }
-    } catch (error) {
-      console.error('Error en la petición de recetas:', error);
-      alert('Error de red o servidor');
-    }
-  };
-  const hookfilter = async (filterurl:String) => {
-    try {
-      const response = await fetch(`http://10.0.2.2:3000/api/v1/recetas/${filterurl}/${searchQuery}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-  
-      const data = await response.json();
-      if (response.ok) {
-        const formatted = data.map((r) => ({
-          id: r.id,
-          title: r.titulo,
-          image: r.imagenes[0],
-          rating: r.valoracionPromedio || 0,
-          chef: r.usuario?.alias || 'Desconocido',
-        }));
-        setRecipes(formatted); // Asignar las recetas obtenidas al estado
-      } else {
-        //setIsErrorSearchModalVisible(true); 
-      }
-    } catch (error) {
-      console.error('Error en la petición de recetas filtradas:', error);
-      fetchRecipes(); // Si no hay filtro, cargar todas las recetas
+    } 
+    catch (error) {
+      fetchRecipes(setRecipes); 
     }
   };
   const filterRecepies = async (option:String) => {
@@ -163,7 +97,8 @@ const SearchScreen = () => {
         console.error('Filtro desconocido:', filter);
       }
     } else {
-      fetchRecipes(); // Si no hay filtro, cargar todas las recetas
+      fetchRecipes(setRecipes);
+      return setRecipes(recipes); 
     }
   };
   const closeModalSuccess = () => {
@@ -176,10 +111,7 @@ const SearchScreen = () => {
   }
 
   const handleRecipePress = (recipeId: string) => {
-          // Aquí iría la lógica para navegar a la pantalla de detalle de la receta
-          console.log(`Receta tocada con ID: ${recipeId}`);
-          router.push(`/recipe?id=${recipeId}`);        // Ejemplo de navegación usando expo-router:
-          // navigation.navigate('RecipeDetail', { id: recipeId });
+          router.push(`/recipe?id=${recipeId}`);       
       };
 
 
@@ -266,9 +198,9 @@ const SearchScreen = () => {
         />
 
         <CustomAlertModal
-           isVisible={isErrorSearchModalVisible} // Estado para controlar la visibilidad del modal
+           isVisible={isErrorSearchModalVisible}
            message="Error en la elección de filtro"
-           onConfirm={closeModalSuccess} // Ahora solo cierra este modal, sin navegación
+           onConfirm={closeModalSuccess}
            confirmText="Aceptar"
            showCancelButton={false}
          />

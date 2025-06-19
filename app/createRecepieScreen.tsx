@@ -21,6 +21,9 @@ import React, { useState, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
+import { publishRecipe, uploadImage } from '../hooks/hooks';
+
+
 
 
  const CreateRecipeScreen = () => {
@@ -46,9 +49,9 @@ import { Image } from 'react-native';
 
    const [isDuplicateRecipeModalVisible, setIsDuplicateRecipeModalVisible] = useState(false);
    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // Estado para el modal de eliminación
-   const [image, setImage] = useState(null); // para la imagen local (objeto)
-const [imageUrl, setImageUrl] = useState(null); // para la URL subida
+   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); 
+   const [image, setImage] = useState(null); 
+const [imageUrl, setImageUrl] = useState(null); 
 
 
    const [fontsLoaded] = useFonts({
@@ -84,11 +87,11 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
    };
 
    const handleAddStep = () => {
-    setSteps([...steps, { description: '', imageUri: null, imageUrl: null }]); // CAMBIO AQUÍ
+    setSteps([...steps, { description: '', imageUri: null, imageUrl: null }]); 
   };
  const handleStepChange = (index: number, value: string) => {
     const newSteps = [...steps];
-    newSteps[index].description = value; // CAMBIO AQUÍ
+    newSteps[index].description = value; 
     setSteps(newSteps);
   };    
 
@@ -98,13 +101,20 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
    };
    const handleConfirm = () => {
     console.log('receta creada con exito');
-    setIsSuccessModalVisible(true); // Muestra éxito después de reemplazar
+    setIsSuccessModalVisible(true); 
+        setRecipeName('');
+        setDescription('');
+        setRecipeType('');
+        setServings('');
+        setIngredients([{ name: '', quantity: '' }]);
+        setSteps([{ description: '', imageUri: null, imageUrl: null }]);
+        setImage('');
   };
 
    const handleConfirmReplace = () => {
      console.log('Usuario eligió "Sí", reemplazando receta...');
      setIsDuplicateRecipeModalVisible(false);
-     setIsSuccessModalVisible(true); // Muestra éxito después de reemplazar
+     setIsSuccessModalVisible(true); 
    };
 
    const handleCancelPublication = () => {
@@ -126,32 +136,7 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
    const handleConfirmDelete = () => {
      setIsDeleteModalVisible(false); 
    };
-   const uploadImage = async (imageUri: string) => {
-    const formData = new FormData();
-  
-    formData.append('file', {
-      uri: imageUri,
-      type: 'image/jpeg',
-      name: 'photo.jpg',
-    } as any); // El `as any` es necesario por la diferencia en tipos en React Native
-  
-    try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/upload/image', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-        body: formData,
-      });
-  
-      const data = await response.json();
-      console.log('Imagen subida con éxito:', data.url);
-      return data.url;
-    } catch (error) {
-      console.error('Error subiendo imagen:', error);
-      return null;
-    }
-  };
+   
   
   
   const pickImage = async () => {
@@ -163,7 +148,7 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
     }
   
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,  // corregido según warning
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,  
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
@@ -172,17 +157,14 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
   
     if (!result.canceled) {
       const imageSelected = result.assets[0];
-      console.log('pickImage: imagen seleccionada:', imageSelected);
   
-      setImage(imageSelected); // guarda objeto completo para mostrar la imagen local
+      setImage(imageSelected); 
   
       const uploadedUrl = await uploadImage(imageSelected.uri);
   
       if (uploadedUrl) {
-        console.log('pickImage: URL subida recibida:', uploadedUrl);
-        // Aquí cambia el estado a la URL, pero OJO:
-        // Para evitar problemas en el render, te sugiero usar un estado distinto para la URL:
-        setImageUrl(uploadedUrl); // <-- nuevo estado para url subida
+        
+        setImageUrl(uploadedUrl); 
       }
     }
   };
@@ -203,77 +185,23 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
     
   
     try {
-      // Obtén el usuarioId de AsyncStorage
-      const userId = await AsyncStorage.getItem('userid');
-  
-      if (!userId) {
-        console.error('No se encontró el ID del usuario en AsyncStorage.');
-        return;
-      }
-      console.log(recipeName, description, userId,steps);
-      const token = await AsyncStorage.getItem('token');
-      console.log("Payload que se enviará:", JSON.stringify({
-        pasos: steps.map((step, index) => ({
-          orden: index + 1,
-          descripcion: String(step.description),
-          ...(step.imageUrl && { imagenUrl: String(step.imageUrl) }),
-        })),
-      }, null, 2));
-      
-  
-      // Realiza la solicitud para publicar la receta
-      const response = await fetch('http://10.0.2.2:3000/api/v1/recetas', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-
-        },
-        body: JSON.stringify({
-          titulo: recipeName,
-          descripcion: String(description),
-          categoria: recipeType,
-          porciones: Number(servings),
-          usuarioId: String(userId),
-          ingredientes: ingredients.map(ingredient => ({
-            nombre: ingredient.name,
-            cantidad: Number(ingredient.quantity),
-          })),
-          pasos: steps.map((step, index) => ({
-            orden: index + 1, // Asigna un número secuencial a cada paso
-            descripcion: step.description,
-            ...(step.imageUrl && { imagenUrl: step.imageUrl }), // opcional si tiene imagen
-
-          })),
-          imagenes: [imageUrl || (image ? image.uri : '')], // Usa imageUrl si está disponible, o la URI de la imagen local
-          // Si no hay imagen, puedes manejarlo como desees (por ejemplo, enviar un array vacío o un valor por defecto)
-          // Si no hay imagen, puedes enviar un array vacío o un valor por defecto
-          // imagenes: imageUrl ? [imageUrl] : [], // Si no hay imagen, envía un array vacío
-
-        }),
-      });
-  
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        try {
-          const errorJson = JSON.parse(errorText);
-          console.error("Error al publicar la receta:", errorJson);
-
-        } catch {
-          console.error("Error al publicar la receta (texto):", errorText);
-        }
-      } else {
-        console.log("Receta publicada con éxito");
-        setIsSuccessModalVisible(true)
-      }      
+      await publishRecipe(
+        recipeName,
+        description,
+        recipeType,
+        servings,
+        ingredients,
+        steps,
+        image,
+        imageUrl,
+        () => setIsSuccessModalVisible(true),         
+        (msg) => alert(`Error: ${msg}`)              
+      );      
     } catch (error) {
       console.error('Error al publicar receta:', error);
     }
   };
-  // ... (otras funciones como uploadImage, pickImage para la imagen principal)
 
-  // Nueva función para seleccionar imagen para un paso específico
   const pickImageForStep = async (stepIndex: number) => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
@@ -291,20 +219,15 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
 
     if (!result.canceled) {
       const imageSelected = result.assets[0];
-      console.log(`pickImageForStep (${stepIndex}): imagen seleccionada:`, imageSelected);
 
-      // Actualizar el estado local de la imagen para el paso
       const newSteps = [...steps];
-      newSteps[stepIndex].imageUri = imageSelected.uri; // Guarda la URI local
+      newSteps[stepIndex].imageUri = imageSelected.uri; 
       setSteps(newSteps);
 
-      // Subir la imagen al servidor
       const uploadedUrl = await uploadImage(imageSelected.uri);
 
       if (uploadedUrl) {
-        console.log(`pickImageForStep (${stepIndex}): URL subida recibida:`, uploadedUrl);
-        // Actualizar el estado con la URL subida para el paso
-        const updatedStepsWithUrl = [...newSteps]; // Usamos newSteps que ya tiene la URI local
+        const updatedStepsWithUrl = [...newSteps]; 
         updatedStepsWithUrl[stepIndex].imageUrl = uploadedUrl;
         setSteps(updatedStepsWithUrl);
       }
@@ -414,20 +337,20 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
         style={[styles.stepInput, stepError ? styles.inputError : {}]}
         placeholder={`ej. Agrega la sal lentamente`}
         multiline
-        value={step.description} // CAMBIO AQUÍ: accede a la propiedad 'description'
+        value={step.description} 
         onChangeText={(value) => handleStepChange(index, value)}
       />
       
       {/* BOTÓN PARA SUBIR IMAGEN DEL PASO */}
       <TouchableOpacity 
-        style={styles.stepImagePicker} // Nuevo estilo para el botón de la imagen del paso
-        onPress={() => pickImageForStep(index)} // Llama a la nueva función con el índice del paso
+        style={styles.stepImagePicker} 
+        onPress={() => pickImageForStep(index)} 
       >
-        {step.imageUrl ? ( // Si ya hay una URL subida, muestra la imagen
+        {step.imageUrl ? ( 
           <Image source={{ uri: step.imageUrl }} style={styles.stepSelectedImage} />
-        ) : step.imageUri ? ( // Si hay una URI local, muestra la imagen
+        ) : step.imageUri ? ( 
           <Image source={{ uri: step.imageUri }} style={styles.stepSelectedImage} />
-        ) : ( // Si no hay imagen, muestra el icono de la cámara
+        ) : ( 
           <View style={styles.stepCameraIconContainer}>
             <Ionicons name="camera" size={24} color="#888" />
             <Ionicons name="add-circle" size={12} color="#555" style={styles.stepAddIcon} />
@@ -484,7 +407,7 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
          <CustomAlertModal
            isVisible={isSuccessModalVisible}
            message="¡Receta creada con éxito!"
-           onConfirm={closeModalSuccess} // Ahora solo cierra este modal, sin navegación
+           onConfirm={closeModalSuccess} 
            confirmText="Aceptar"
            showCancelButton={false}
          />
@@ -492,8 +415,8 @@ const [imageUrl, setImageUrl] = useState(null); // para la URL subida
          {/* Modal de "Receta Eliminada" */}
          <CustomAlertModal
            isVisible={isDeleteModalVisible}
-           message="Receta Eliminada" // Usamos solo el mensaje, el título es opcional
-           onConfirm={handleConfirmDelete} // Esta función ahora maneja el cierre del modal y la navegación
+           message="Receta Eliminada" 
+           onConfirm={handleConfirmDelete} 
            confirmText="Aceptar"
            showCancelButton={false}
          />

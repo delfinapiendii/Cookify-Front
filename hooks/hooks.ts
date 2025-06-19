@@ -449,3 +449,170 @@ export const fetchRecipeDetails = async (recipeIdParam: string, setRecipe: Funct
   }
 };
 
+export const searchRecipesByTitle = async (text: string, setRecipes: Function) => {
+  try {
+    const response = await fetch(`${url}/api/v1/recetas/search?titulo=${text}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const formatted = data.map((r: any) => ({
+        id: r.id,
+        title: r.titulo,
+        image: r.imagenes?.[0],
+        rating: r.valoracionPromedio || 0,
+        chef: r.usuario?.alias || 'Desconocido',
+      }));
+      setRecipes(formatted);
+    } else {
+    }
+  } catch (error) {
+    console.error('Error en búsqueda por título:', error);
+  }
+};
+
+export const searchByFilter = async (filterurl: string, searchQuery: string, setRecipes: Function) => {
+
+  try {
+    const response = await fetch(`${url}/api/v1/recetas/${filterurl}/${searchQuery}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const formatted = data.map((r: any) => ({
+        id: r.id,
+        title: r.titulo,
+        image: r.imagenes?.[0],
+        rating: r.valoracionPromedio || 0,
+        chef: r.usuario?.alias || 'Desconocido',
+      }));
+      setRecipes(formatted);
+    } else {
+      setRecipes([]);
+    }
+  } catch (error) {
+    console.error('Error en búsqueda con filtro:', error);
+  }
+};
+
+export const fetchRecipes = async (setRecipes: Function) => {
+  try {
+    const response = await fetch(`${url}/api/v1/recetas`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const formatted = data.map((r: any) => ({
+        id: r.id,
+        title: r.titulo,
+        image: r.imagenes[0],
+        rating: r.valoracionPromedio || 0,
+        chef: r.usuario?.alias || 'Desconocido',
+      }));
+      setRecipes(formatted);
+    } else {
+      console.error('Error al obtener recetas:', data.message);
+      setRecipes([]);
+    }
+  } catch (error) {
+    console.error('Error en la petición de recetas:', error);
+    alert('Error de red o servidor');
+  }
+};
+export const publishRecipe = async (
+  recipeName: string,
+  description: string,
+  recipeType: string,
+  servings: string,
+  ingredients: { name: string; quantity: string }[],
+  steps: { description: string; imageUrl: string | null }[],
+  image: any,
+  imageUrl: string | null,
+  onSuccess: () => void,
+  onError: (message: string) => void
+) => {
+  try {
+    const userId = await AsyncStorage.getItem('userid');
+    if (!userId) {
+      onError('No se encontró el ID del usuario');
+      return;
+    }
+
+    const token = await AsyncStorage.getItem('token');
+    const response = await fetch(`${url}/api/v1/recetas`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        titulo: recipeName,
+        descripcion: description,
+        categoria: recipeType,
+        porciones: Number(servings),
+        usuarioId: userId,
+        ingredientes: ingredients.map((i) => ({
+          nombre: i.name,
+          cantidad: Number(i.quantity),
+        })),
+        pasos: steps.map((step, index) => ({
+          orden: index + 1,
+          descripcion: step.description,
+          ...(step.imageUrl ? { imagenUrl: step.imageUrl } : {}),
+        })),
+        imagenes: [imageUrl || (image ? image.uri : '')],
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const json = JSON.parse(errorText);
+        onError(json.message || 'Error al publicar la receta');
+      } catch {
+        onError(errorText);
+      }
+    } else {
+      onSuccess();
+    }
+  } catch (err: any) {
+    onError(err.message || 'Error de red');
+  }
+};
+export const uploadImage = async (imageUri) => {
+  const formData = new FormData();
+  const file = {
+    uri: imageUri,
+    type: 'image/jpeg',
+    name: 'photo.jpg',
+  };
+
+  formData.append('file', file as any);
+
+  try {
+    const response = await fetch(`${url}/api/v1/upload/image`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+    return data.url;
+  } catch (error) {
+    console.error('Error subiendo imagen:', error);
+    return null;
+  }
+};
