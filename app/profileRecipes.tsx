@@ -15,7 +15,8 @@ import RecipeGrid from './components/recipeGrid';
 import LogoComponent from './components/logoHeader';
 import NavBarComponent from './components/navBar';
 import { router } from 'expo-router';
-import { useCreatedRecipes, useSavedRecipes } from './hooks/hooks';
+import { useCreatedRecipes, useSavedRecipes } from '../hooks/hooks';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserProfile {
   id: string;
@@ -24,7 +25,9 @@ interface UserProfile {
   email: string;
 }
 
-const ProfileRecipesScreen = () => {
+const ProfileRecipesScreen =  () => {
+ 
+
   const [profile, setProfile] = useState<UserProfile | null>({
     id: '4554403b-da2e-4d55-872d-e66c374594c5',
     name: 'Delfina',
@@ -32,7 +35,8 @@ const ProfileRecipesScreen = () => {
     email: 'delfinapiendi@gmail.com',
   });
 
-  const recipesCreated = useCreatedRecipes();
+  const { recipes: recipesCreated, loading: loadingCreated } = useCreatedRecipes();
+
   const recipesSaved = useSavedRecipes();
 
   const [fontsLoaded] = useFonts({
@@ -55,7 +59,7 @@ const ProfileRecipesScreen = () => {
   const overallAverageRating = recipesCreated.length > 0 ? (sumRatings / recipesCreated.length) : 0;
 
   const handleRecipePress = (id: string) => {
-    console.log('Receta presionada con ID:', id);
+    router.push(`/recipe?id=${id}`); 
   };
 
   const handleVerMas = () => {
@@ -65,6 +69,16 @@ const ProfileRecipesScreen = () => {
       params: {
         recipes: recipesString,
         title: 'Tus recetas creadas'
+      },
+    });
+  };
+  const handleViewMoreGuardadas = () => {
+    const recipesString = encodeURIComponent(JSON.stringify(recipesSaved));
+    router.push({
+      pathname: '/viewMore',
+      params: {
+        recipes: recipesString,
+        title: 'Tus recetas guardadas'
       },
     });
   };
@@ -120,7 +134,7 @@ const ProfileRecipesScreen = () => {
         <View style={profileStyles.section}>
           <View style={profileStyles.sectionHeader}>
             <Text style={profileStyles.sectionTitle}>Guardadas</Text>
-            <TouchableOpacity onPress={() => console.log('Ver más recetas guardadas')}>
+            <TouchableOpacity onPress={handleViewMoreGuardadas}>
               <Text style={profileStyles.viewMoreText}>Ver más</Text>
             </TouchableOpacity>
           </View>

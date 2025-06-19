@@ -12,8 +12,8 @@ import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fo
 import * as SplashScreen from 'expo-splash-screen';
 import { router, useNavigation } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import { loginStyles } from './styles/loginStyles';
+import { handleLogin, decodeJWT } from '../hooks/hooks';
 
 const LoginScreen = () => {
   const [mail, setMail] = useState('');
@@ -39,65 +39,30 @@ const LoginScreen = () => {
   if (!fontsLoaded) {
     return null;
   }
-  const decodeJWT = (token) => {
-    try {
-      const payload = token.split('.')[1]; // El 2do segmento es el payload
-      const decodedPayload = JSON.parse(atob(payload));
-      return decodedPayload;
-    } catch (error) {
-      console.error('Error al decodificar JWT:', error);
-      return null;
-    }
-  };
 
-  const handleLogin = async () => {
+  const handleLoginPress = async () => {
     setMailError('');
     setPasswordError('');
-    try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: mail,
-          password: password,
-        }),
-      });
 
-      console.log('data:', mail, password);
+    const { success, message, token } = await handleLogin(mail, password);
 
-      const data = await response.json();
-
-      if (response.ok) {
-        console.log('Login exitoso:', data);
-        const token = data.token;
-
-        try {
-          const decoded = decodeJWT(data.token);
-          console.log('Decoded token:', decoded);
-          await AsyncStorage.setItem('userid', decoded.id);
-
-        } catch (error) {
-          console.error('Error al decodificar el token:', error);
-        }
-
-        await AsyncStorage.setItem('token', data.token);
+    if (success) {
+      try {
+        const decoded = decodeJWT(token);
+        await AsyncStorage.setItem('userid', decoded.id);
+        await AsyncStorage.setItem('token', token);
         router.push('/home');
-      } else {
-        console.log('Login fallido:', data.message);
-
-        if (data.message === 'password is wrong') {
-          setPasswordError('Contraseña incorrecta');
-        }
-        if (data.message === 'email is wrong') {
-          setMailError('Email incorrecto');
-        }
-        console.log('Error en el login:', data.message || 'Error desconocido');
+      } catch (error) {
+        console.error('Error al guardar token:', error);
       }
-    } catch (error) {
-      console.error('Error en la petición de login:', error);
-      alert('Error de red o servidor');
+    } else {
+      if (message === 'password is wrong') {
+        setPasswordError('Contraseña incorrecta');
+      }
+      if (message === 'email is wrong') {
+        setMailError('Email incorrecto');
+      }
+      console.log('Error en el login:', message || 'Error desconocido');
     }
   };
 
@@ -106,13 +71,13 @@ const LoginScreen = () => {
       setMailError('Por favor, ingresa tu email primero');
       return;
     }
-  
+
     router.push({
       pathname: '/passwordReset',
       params: { email: mail },
     });
   };
-  
+
   return (
     <SafeAreaView style={loginStyles.safeArea}>
       <Image
@@ -120,7 +85,6 @@ const LoginScreen = () => {
         style={loginStyles.backgroundImage}
         resizeMode="cover"
       />
-
       <View style={loginStyles.contentWrapper}>
         <View style={loginStyles.header}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
@@ -134,10 +98,8 @@ const LoginScreen = () => {
             />
           </View>
         </View>
-
         <View style={loginStyles.container}>
           <Text style={loginStyles.title}>Iniciar Sesión</Text>
-
           <TextInput
             style={[loginStyles.input, mailError ? loginStyles.inputError : {}]}
             placeholder="Mail"
@@ -147,7 +109,6 @@ const LoginScreen = () => {
             autoCapitalize="none"
           />
           {mailError ? <Text style={loginStyles.errorMessage}>{mailError}</Text> : null}
-
           <TextInput
             style={[loginStyles.input, passwordError ? loginStyles.inputError : {}]}
             placeholder="Contraseña"
@@ -157,12 +118,9 @@ const LoginScreen = () => {
             secureTextEntry
           />
           {passwordError ? <Text style={loginStyles.errorMessage}>{passwordError}</Text> : null}
-
-          <TouchableOpacity style={loginStyles.loginButton} onPress={handleLogin}>
+          <TouchableOpacity style={loginStyles.loginButton} onPress={handleLoginPress}>
             <Text style={loginStyles.loginButtonText}>Comenzar</Text>
           </TouchableOpacity>
-
-          {/* Bloque corregido para recuperación de contraseña */}
           <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 10 }}>
             <Text style={loginStyles.forgotPasswordText}>¿No recuerdas tu contraseña? </Text>
             <TouchableOpacity onPress={handleForgotPassword}>
