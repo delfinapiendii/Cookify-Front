@@ -51,7 +51,8 @@ const RecipeDetailScreen = () => {
       setServings,
       setUserRating,
       setLoading,
-      setError
+      setError,
+      setIsBookmarked
     );
   }, [recipeIdParam]);
   

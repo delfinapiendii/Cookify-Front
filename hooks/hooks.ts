@@ -38,47 +38,74 @@ export const useCreatedRecipes = () => {
 
   return { recipes, loading }; // ahora devolvemos loading también
 };
+
+let refetchSavedRecipesCallback: (() => void) | null = null;
+
+export const setRefetchSavedRecipesCallback = (callback: () => void) => {
+  refetchSavedRecipesCallback = callback;
+};
+
 export function useSavedRecipes() {
   const [recipesSaved, setRecipesSaved] = useState([]);
+  const [loadingSaved, setLoadingSaved] = useState(true); // Añadir estado de carga
+
+  const fetchRecipesSaved = async () => {
+    setLoadingSaved(true); // Iniciar carga
+    try {
+      const userId = await AsyncStorage.getItem('userid');
+      const token = await AsyncStorage.getItem('token');
+
+      if (!userId || !token) {
+        console.warn('Usuario o token no encontrados, no se pueden cargar recetas guardadas.');
+        setRecipesSaved([]);
+        setLoadingSaved(false);
+        return;
+      }
+
+      const response = await fetch(`${url}/api/v1/favoritos/usuario/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const formatted = data.map((r: any) => ({ // Asegúrate del tipo any para 'r' si no tienes interfaces
+          id: r.id,
+          title: r.titulo,
+          image: r.imagenes?.[0] ?? 'https://via.placeholder.com/150?text=No+Image',
+          rating: r.valoracionPromedio || 0,
+          chef: r.usuario?.alias || 'Desconocido',
+        }));
+        setRecipesSaved(formatted);
+      } else {
+        console.error('Error al obtener recetas guardadas:', data.message || 'Error desconocido');
+        setRecipesSaved([]); // Limpiar en caso de error
+      }
+    } catch (error) {
+      console.error('Error en la petición de recetas guardadas:', error);
+      setRecipesSaved([]); // Limpiar en caso de error
+    } finally {
+      setLoadingSaved(false); // Finalizar carga
+    }
+  };
 
   useEffect(() => {
-    const fetchRecipesSaved = async () => {
-      try {
-        const userId = await AsyncStorage.getItem('userid');
-        const token = await AsyncStorage.getItem('token');
-
-        const response = await fetch(`http://10.0.2.2:3000/api/v1/favoritos/usuario/${userId}`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          const formatted = data.map((r) => ({
-            id: r.id,
-            title: r.titulo,
-            image: r.imagenes?.[0] ?? 'https://via.placeholder.com/150?text=No+Image',
-            rating: r.valoracionPromedio || 0,
-            chef: r.usuario?.alias || 'Desconocido',
-          }));
-          setRecipesSaved(formatted);
-        } else {
-          console.error('Error al obtener recetas guardadas:', data.message);
-        }
-      } catch (error) {
-        console.error('Error en la petición de recetas guardadas:', error);
-      }
-    };
-
     fetchRecipesSaved();
+    // Registrar la función de recarga para que pueda ser llamada desde toggleBookmark
+    setRefetchSavedRecipesCallback(fetchRecipesSaved);
+
+    // Limpiar el callback al desmontar para evitar fugas de memoria
+    return () => {
+      setRefetchSavedRecipesCallback(null);
+    };
   }, []);
 
-  return recipesSaved;
-};
+  return { recipesSaved, loadingSaved, refetchRecipesSaved: fetchRecipesSaved };
+}
 export const useRegisterPhaseOne = () => {
   const [form, setForm] = useState({ username: '', name: '', email: '' });
   const [errors, setErrors] = useState({ username: '', name: '', email: '' });
@@ -321,11 +348,12 @@ export const toggleBookmark = async (recipeIdParam: string, isBookmarked: boolea
     return;
   }
 
-  const nuevaAccion = !isBookmarked;
-  setIsBookmarked(nuevaAccion);
+  // Optimistic UI update: cambia el estado inmediatamente
+  const previousBookmarkedState = isBookmarked; // Guardar estado previo
+  setIsBookmarked(!isBookmarked);
 
   try {
-    if (nuevaAccion) {
+    if (!previousBookmarkedState) { // Si antes no estaba marcado, ahora lo agregamos
       const response = await fetch(`${url}/api/v1/favoritos`, {
         method: 'POST',
         headers: {
@@ -338,8 +366,14 @@ export const toggleBookmark = async (recipeIdParam: string, isBookmarked: boolea
         }),
       });
 
-      const data = await response.json();
-    } else {
+      if (!response.ok) {
+        // Revertir el estado si la operación falla
+        setIsBookmarked(previousBookmarkedState);
+        const errorData = await response.json();
+        Alert.alert('Error', errorData.message || 'No se pudo agregar a favoritos.');
+        console.error('Error adding favorite:', response.status, errorData);
+      }
+    } else { // Si antes estaba marcado, ahora lo eliminamos
       const response = await fetch(`${url}/api/v1/favoritos/${userId}/${parsedRecipeId}`, {
         method: 'DELETE',
         headers: {
@@ -347,14 +381,24 @@ export const toggleBookmark = async (recipeIdParam: string, isBookmarked: boolea
         },
       });
 
-      if (response.status !== 200 ) {
-        const data = await response.text();
-        console.error('Error desfaveando:', response.status, data);
+      if (!response.ok) {
+        // Revertir el estado si la operación falla
+        setIsBookmarked(previousBookmarkedState);
+        const errorText = await response.text();
+        Alert.alert('Error', 'No se pudo eliminar de favoritos.');
+        console.error('Error removing favorite:', response.status, errorText);
       }
+    }
+
+    // Si la operación fue exitosa, llamar al callback para recargar los favoritos
+    if (refetchSavedRecipesCallback) {
+      refetchSavedRecipesCallback();
     }
   } catch (err) {
     console.error('Error en toggleBookmark:', err);
-    Alert.alert('Error', 'No se pudo modificar el favorito.');
+    Alert.alert('Error', 'No se pudo modificar el favorito debido a un error de red.');
+    // Revertir el estado si la operación falla por error de red
+    setIsBookmarked(previousBookmarkedState);
   }
 };
 
@@ -423,7 +467,7 @@ export const postComment = async (comment: string, recipeIdParam: string) => {
 
 };
 
-export const fetchRecipeDetails = async (recipeIdParam: string, setRecipe: Function, setServings: Function, setUserRating: Function, setLoading: Function, setError: Function) => {
+export const fetchRecipeDetails = async (recipeIdParam: string, setRecipe: Function, setServings: Function, setUserRating: Function, setLoading: Function, setError: Function, setIsBookmarked: Function) => {
   if (!recipeIdParam) {
     setError('No se proporcionó un ID de receta.');
     setLoading(false);
@@ -431,18 +475,47 @@ export const fetchRecipeDetails = async (recipeIdParam: string, setRecipe: Funct
   }
 
   try {
+    // 1. Obtener los detalles de la receta
     const response = await fetch(`${url}/api/v1/recetas/${recipeIdParam}`);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-
     const data = await response.json();
     setRecipe(data);
     setServings(data.porciones || 1);
     setUserRating(data.valoracionPromedio || 0);
+
+    // 2. Obtener el ID del usuario y el token
+    const userId = await AsyncStorage.getItem('userid');
+    const token = await AsyncStorage.getItem('token');
+
+    if (userId && token) {
+      // 3. Hacer fetch a la API de recetas guardadas del usuario
+      const savedRecipesResponse = await fetch(`${url}/api/v1/favoritos/usuario/${userId}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (savedRecipesResponse.ok) {
+        const savedRecipesData = await savedRecipesResponse.json();
+        // 4. Verificar si la receta actual está en las favoritas
+        const isCurrentlyBookmarked = savedRecipesData.some(
+          (favRecipe: any) => String(favRecipe.id) === recipeIdParam // Asegurarse de que los IDs sean del mismo tipo para la comparación
+        );
+        setIsBookmarked(isCurrentlyBookmarked);
+      } else {
+        console.warn('No se pudieron cargar los favoritos del usuario:', savedRecipesResponse.status);
+        setIsBookmarked(false); // Por defecto, no marcado si hay error al cargar favoritos
+      }
+    } else {
+      setIsBookmarked(false); // No está logueado, no puede tener favoritos
+    }
   } catch (err: any) {
-    console.error('Error fetching recipe details:', err);
-    setError('No se pudo cargar la receta. Por favor, inténtalo de nuevo más tarde.');
+    console.error('Error fetching recipe details or user favorites:', err);
+    setError('No se pudo cargar la receta o verificar favoritos. Por favor, inténtalo de nuevo más tarde.');
     Alert.alert('Error', 'No se pudo cargar la receta. ' + err.message);
   } finally {
     setLoading(false);
