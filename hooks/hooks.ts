@@ -14,7 +14,7 @@ export const useCreatedRecipes = () => {
         const userId = await AsyncStorage.getItem('userid');
         if (!userId) return;
 
-        const res = await fetch(`http://10.0.2.2:3000/api/v1/recetas/usuario/${userId}`);
+        const res = await fetch(`${url}/api/v1/recetas/usuario/${userId}`);
         const data = await res.json();
 
         const formatted = data.map((r: any) => ({
@@ -23,7 +23,9 @@ export const useCreatedRecipes = () => {
           image: r.imagenes?.[0] || '',
           rating: r.valoracionPromedio || 0,
           chef: r.usuario?.alias || 'Desconocido',
-        }));
+          imagenes: r.imagenes?.[0] ?? 'https://via.placeholder.com/150?text=No+Image',
+
+          }));
 
         setRecipes(formatted);
       } catch (err) {
@@ -76,11 +78,15 @@ export function useSavedRecipes() {
         const formatted = data.map((r: any) => ({ // Asegúrate del tipo any para 'r' si no tienes interfaces
           id: r.id,
           title: r.titulo,
-          image: r.imagenes?.[0] ?? 'https://via.placeholder.com/150?text=No+Image',
+          image: r.imagenes?.[0]?.url ?? 'https://via.placeholder.com/150?text=No+Image',
+
           rating: r.valoracionPromedio || 0,
           chef: r.usuario?.alias || 'Desconocido',
         }));
         setRecipesSaved(formatted);
+        
+
+
       } else {
         console.error('Error al obtener recetas guardadas:', data.message || 'Error desconocido');
         setRecipesSaved([]); // Limpiar en caso de error

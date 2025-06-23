@@ -37,12 +37,16 @@ const ProfileRecipesScreen =  () => {
 
   const { recipes: recipesCreated, loading: loadingCreated } = useCreatedRecipes();
 
-   const { recipesSaved, loadingSaved } = useSavedRecipes();
+  const { recipesSaved, loadingSaved } = useSavedRecipes();
 
   const [fontsLoaded] = useFonts({
     WorkSans_400Regular,
     WorkSans_700Bold,
   });
+  useEffect(() => {
+    console.log('Render actualizado - recipesSaved:', recipesSaved);
+  }, [recipesSaved]);
+  
 
   useEffect(() => {
     const manejarSplash = async () => {
@@ -143,7 +147,7 @@ const ProfileRecipesScreen =  () => {
           ) : recipesSaved.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={profileStyles.featuredRecipesContainer}>
               {recipesSaved.slice(0, 5).map((recipe) => (
-                <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} onPress={() => handleRecipePress(recipe.id)}>
+                <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} >
                   <ImageBackground source={{ uri: recipe.image }} style={profileStyles.recipeImage} imageStyle={{ opacity: 0.6 }} resizeMode="cover">
                     <View style={profileStyles.recipeTitleContainer}>
                       <Text style={[profileStyles.recipeTitle, { fontFamily: 'WorkSans_400Regular', fontWeight: '500' }]}>{recipe.title}</Text>
