@@ -200,6 +200,14 @@ const [imageUrl, setImageUrl] = useState(null);
     } catch (error) {
       console.error('Error al publicar receta:', error);
     }
+    setRecipeName(''),
+    setDescription(''),
+    setRecipeType(''),
+    setServings(''),
+    setIngredients([{ name: '', quantity: '' }]),
+    setSteps([{ description: '', imageUri: null, imageUrl: null }]),
+    setImage(''),
+    setImageUrl('')
   };
 
   const pickImageForStep = async (stepIndex: number) => {

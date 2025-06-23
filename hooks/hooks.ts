@@ -580,6 +580,7 @@ export const fetchRecipes = async (setRecipes: Function) => {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
+        
       },
     });
 
@@ -603,6 +604,41 @@ export const fetchRecipes = async (setRecipes: Function) => {
     alert('Error de red o servidor');
   }
 };
+
+export const loadPendingRecipes = async (setRecipes: Function) => {
+  const userId = await AsyncStorage.getItem('userid');
+  const token = await AsyncStorage.getItem('token');
+
+  try {
+    const response = await fetch(`${url}/api/v1/recetas/pendientes/usuario/${userId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const formatted = data.map((r: any) => ({
+        id: r.id,
+        title: r.titulo,
+        image: r.imagenes[0],
+        rating: r.valoracionPromedio || 0,
+        chef: r.usuario?.alias || 'Desconocido',
+      }));
+      setRecipes(formatted);
+    } else {
+      console.error('Error al obtener recetas:', data.message);
+      setRecipes([]);
+    }
+  } catch (error) {
+    console.error('Error en la petición de recetas:', error);
+    alert('Error de red o servidor');
+  }
+};
+
 export const publishRecipe = async (
   recipeName: string,
   description: string,
@@ -687,5 +723,8 @@ export const uploadImage = async (imageUri) => {
   } catch (error) {
     console.error('Error subiendo imagen:', error);
     return null;
-  }
+  };
+
+
+
 };

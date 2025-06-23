@@ -4,6 +4,7 @@ import {
   View,
   Text,
   TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useNavigation } from 'expo-router';
@@ -13,7 +14,7 @@ import styles from './styles/searchScreenStyles';
 import BottomNavigation from './components/navBar';
 import LogoHeader from './components/logoHeader';
 import RecipeList from './components/recepieList';
-import { SearchBar } from '@rneui/themed';
+//import { SearchBar } from '@rneui/themed';
 import { FontAwesome } from '@expo/vector-icons';
 //import recipesData from '../assets/data/recepie.json';
 import ModalSelector from './components/modalSelector';
@@ -108,6 +109,8 @@ const SearchScreen = () => {
   const handleDoneSearch = () => {
     setFilter(undefined); 
     filterRecepies('Nombre');
+    updateSearch('');
+    fetchRecipes(setRecipes);
   }
 
   const handleRecipePress = (recipeId: string) => {
@@ -125,25 +128,29 @@ const SearchScreen = () => {
         <ScrollView style={[styles.containerHome]}>
           <LogoHeader />
 
-          <SearchBar
-            placeholder="Buscar Receta"
-            onChangeText={updateSearch}
-            value={searchQuery}
-            lightTheme
-            round
-            containerStyle={styles.searchBarContainer}
-            inputContainerStyle={styles.searchBarInputContainer}
-            inputStyle={styles.searchBarInput}
-            searchIcon={<Ionicons name="search-outline" size={24} color="#86939e" />}
-            clearIcon={
-              <Ionicons
-                name="close-circle-outline"
-                size={24}
-                color="#86939e"
-                onPress={handleDoneSearch}
-              />
-            }
-          />
+          <View style={styles.searchBarContainer}>
+          <View style={styles.searchBarInputContainer}>
+            <Ionicons
+              name="search-outline"
+              size={24}
+              color="#86939e"
+              style={styles.searchIcon}
+            />
+            <TextInput
+              placeholder="Buscar Receta"
+              value={searchQuery}
+              onChangeText={updateSearch}
+              style={styles.searchBarInput}
+              placeholderTextColor="#86939e"
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity onPress={handleDoneSearch}>
+                <Ionicons name="close-circle-outline" size={24} color="#86939e" />
+              </TouchableOpacity>
+            )}
+          </View>
+        </View>
+
 
           {/* Filtros y Ordenar por */}
           <View style={styles.filtersContainer}>

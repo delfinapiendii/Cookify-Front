@@ -17,10 +17,12 @@ import CustomAlertModal from './components/alert';
 
 import { styles } from './styles/profileStyles'; 
 import LogoHeader from './components/logoHeader';
+import { loadPendingRecipes } from '../hooks/hooks';
 
 const pendingProfile = () => {
 
   const navigation = useNavigation();
+  const [recipes, setRecipes] = useState([]); // Estado para recetas
 
 
   const [fontsLoaded] = useFonts({
@@ -35,6 +37,17 @@ const pendingProfile = () => {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+
+  useEffect(() => {
+      loadPendingRecipes(setRecipes);
+  }, []);
+  interface PendingRecipe {
+    id: string;
+    title: string;
+    image: string; // Assuming this is the URL for the image
+    estado: string; // The status, e.g., "En proceso de revisión"
+    createdAt: string; // Or a more appropriate date field if available
+  }
   
 
 
@@ -58,6 +71,26 @@ const pendingProfile = () => {
           <Text style={styles.infoText}>Todas las recetas previas a publicación son aprobadas por nuestro equipo. {''}Puedes seguir aquí el estado de las recetas que creaste.</Text>
          <View style={styles.divider} />
         </View>
+      </View>
+
+      <View style={styles.recipesListContainer}>
+        {recipes.length > 0 ? (
+          recipes.map((recipe) => (
+            <TouchableOpacity
+              key={recipe.id}
+              style={styles.recipeItemContainer} // Apply new style
+              onPress={() => router.push({ pathname: '/recipe', params: { id: recipe.id } })}
+            >
+              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
+              <View style={styles.recipeInfo}>
+                <Text style={styles.recipeTitle} numberOfLines={1}>{recipe.title}</Text>
+                <Text style={styles.recipeStatus}>Estado: En proceso de revisión</Text>
+              </View>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.noRecipesText}>No hay recetas pendientes.</Text>
+        )}
       </View>
       
     </SafeAreaView>

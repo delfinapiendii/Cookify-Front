@@ -166,6 +166,59 @@ export const styles = StyleSheet.create({
     marginLeft: width * 0.05,
     marginRight: width * 0.05,
   },
+  recipesListContainer: {
+    paddingHorizontal: 20,
+    marginTop: 20,
+    width: '100%',
+    flex: 1, // Allow it to take available space
+  },
+  recipeItemContainer: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  recipeImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 15,
+    resizeMode: 'cover',
+  },
+  recipeInfo: {
+    flex: 1,
+  },
+  recipeTitle: {
+    fontSize: 18,
+    fontFamily: 'WorkSans_700Bold', // Use your bold font
+    color: '#333',
+    marginBottom: 5,
+  },
+  recipeStatus: {
+    fontSize: 14,
+    fontFamily: 'WorkSans_400Regular', // Use your regular font
+    color: '#666',
+    marginBottom: 3,
+  },
+  recipeDate: {
+    fontSize: 12,
+    fontFamily: 'WorkSans_400Regular',
+    color: '#999',
+  },
+  noRecipesText: {
+    fontSize: 16,
+    fontFamily: 'WorkSans_400Regular',
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 30,
+  },
 
 
 });

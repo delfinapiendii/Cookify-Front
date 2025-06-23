@@ -8,28 +8,9 @@ const seacrhScreenStyles = StyleSheet.create({
 
   },
   searchBarContainer: {
-    flex: 1,
-    backgroundColor: '#FFFFFF',
-    padding: 2, 
-    borderWidth: 0,
-    borderTopWidth: 0,
-    borderBottomWidth: 0,
-    borderColor : '#FFFFFF',
-
-   },
-  searchBarInputContainer: {
-    borderRadius: 20,
-    borderWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#FF9A16',
-    backgroundColor: '#FFFFFF',
-    marginBottom: 5,
+    paddingHorizontal: 10,
+    marginVertical: 10,
   },
-  searchBarInput: {
-    fontFamily: 'WorkSans_400Regular',
-    fontSize: 16,
-  },
-
   filtersContainer: {
     flexDirection: 'row',
     paddingHorizontal: 15,
@@ -156,6 +137,30 @@ const seacrhScreenStyles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'WorkSans_700Bold',
   },
+  
+  searchBarInputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FFFFF',
+    borderRadius: 30,
+    borderColor:'#FF9A16',
+    height:60,
+    borderWidth:  1,
+    paddingHorizontal: 10,
+  },
+  
+  searchBarInput: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 10,
+    fontSize: 16,
+    color: '#333',
+  },
+  
+  searchIcon: {
+    marginRight: 5,
+  },
+  
 
 });
 
