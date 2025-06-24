@@ -147,7 +147,7 @@ const ProfileRecipesScreen =  () => {
           ) : recipesSaved.length > 0 ? (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={profileStyles.featuredRecipesContainer}>
               {recipesSaved.slice(0, 5).map((recipe) => (
-                <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} >
+                <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} onPress={() => handleRecipePress(recipe.id)}>
                   <ImageBackground source={{ uri: recipe.image }} style={profileStyles.recipeImage} imageStyle={{ opacity: 0.6 }} resizeMode="cover">
                     <View style={profileStyles.recipeTitleContainer}>
                       <Text style={[profileStyles.recipeTitle, { fontFamily: 'WorkSans_400Regular', fontWeight: '500' }]}>{recipe.title}</Text>
