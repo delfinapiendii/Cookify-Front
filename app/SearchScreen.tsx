@@ -146,6 +146,33 @@ const SearchScreen = () => {
     router.push(`/recipe?id=${recipeId}`);
   };
 
+  const sortRecipes = (option: string) => {
+    let sortedRecipes = [...recipes]; // Crea una copia para no mutar el estado directamente
+
+    switch (option) {
+      case 'De A a Z':
+        sortedRecipes.sort((a: any, b: any) => a.title.localeCompare(b.title));
+        break;
+      case 'De Z a A':
+        sortedRecipes.sort((a: any, b: any) => b.title.localeCompare(a.title));
+        break;
+      case 'Novedad':
+        // === CORRECCIÓN AQUÍ ===
+        // Ordena por ID de forma descendente. Asume que IDs más altos son más nuevos.
+        // Convertimos a número en caso de que sean strings numéricos.
+        sortedRecipes.sort((a: any, b: any) => Number(b.id) - Number(a.id));
+        break;
+      case 'Usuario':
+        // Asumiendo que 'chef' es la propiedad del usuario
+        sortedRecipes.sort((a: any, b: any) => a.chef.localeCompare(b.chef));
+        break;
+      default:
+        // No hacer nada si la opción no es reconocida
+        break;
+    }
+    setRecipes(sortedRecipes); // Actualiza el estado con las recetas ordenadas
+  };
+
   if (!fontsLoaded) {
     return <View><Text>Cargando fuentes...</Text></View>;
   }
@@ -226,6 +253,7 @@ const SearchScreen = () => {
             onSelectOption={(option) => {
               setOrder(String(option));
               toggleSortModal();
+              sortRecipes(String(option)); // === LLAMADA A LA FUNCIÓN DE ORDENAMIENTO ===
             }}
           />
 
