@@ -27,7 +27,7 @@ const RecipeDetailScreen = () => {
   const { id: recipeIdParam } = useLocalSearchParams<{ id: string }>();
   const navigation = useNavigation();
 
-  const [recipe, setRecipe] = useState(null);
+  const [recipe, setRecipe] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [servings, setServings] = useState(0);
@@ -110,11 +110,30 @@ const RecipeDetailScreen = () => {
     confirmRating(tempRating, recipeIdParam, setUserRating, closeRatingModal);
   };
 
-  const handlePostComment = () => {
-    postComment(comment, recipeIdParam).catch((error) => {
-      console.error('Failed to post comment:', error);
-    });
-    setComment('');
+  const handlePostComment = async () => {
+    if (!comment.trim()) {
+      Alert.alert('Error', 'El comentario no puede estar vacío.');
+      return;
+    }
+    try {
+      const newCommentData = await postComment(comment, recipeIdParam); // Esperar y obtener el nuevo comentario
+
+      // Actualizar el estado de la receta añadiendo el nuevo comentario al array 'comentarios'
+      setRecipe((prevRecipe: any) => {
+        if (!prevRecipe) return prevRecipe; // Si prevRecipe es null, no hagas nada
+        return {
+          ...prevRecipe,
+          // Asegúrate de que comentarios sea un array antes de hacer spread
+          comentarios: [...(prevRecipe.comentarios || []), newCommentData],
+        };
+      });
+      setComment(''); // Limpiar el campo de texto
+
+    } catch (error) {
+      // El error ya se maneja y se muestra una alerta en postComment,
+      // aquí solo lo logueamos si es necesario.
+      console.error('Error en handlePostComment:', error);
+    }
   };
 
   const mainImageUrl = recipe.imagenes?.[0] || 'https://via.placeholder.com/400x200?text=No+Image';

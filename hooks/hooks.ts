@@ -450,27 +450,35 @@ export const confirmRating = async (
 
 export const postComment = async (comment: string, recipeIdParam: string) => {
   const token = await AsyncStorage.getItem('token');
-    const userId = await AsyncStorage.getItem('userid');
+  const userId = await AsyncStorage.getItem('userid');
 
-    try {
-      const parsedRecipeId = parseInt(recipeIdParam);
-      await fetch(`${url}/api/v1/comentarios`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          recetaId: parsedRecipeId,
-          usuarioId: userId,
-          contenido: comment,
-        }),
-      });
+  try {
+    const parsedRecipeId = parseInt(recipeIdParam);
+    const response = await fetch(`${url}/api/v1/comentarios`, { // Añadir 'response' para leer el cuerpo
+       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        recetaId: parsedRecipeId,
+        usuarioId: userId,
+        contenido: comment,
+      }),
+    });
 
-    } catch {
-      Alert.alert('Error', 'No se pudo enviar el comentario.');
+    if (!response.ok) { // Si la respuesta no es OK, lanzar un error
+      const errorData = await response.json();
+      throw new Error(errorData.message || 'Error al enviar el comentario.');
     }
 
+    const newCommentData = await response.json(); // Leer el comentario recién creado
+    return newCommentData; // Devolver el comentario creado
+  } catch (error) { // Capturar el error y re-lanzarlo
+    console.error('Error al enviar el comentario:', error);
+    Alert.alert('Error', error.message || 'No se pudo enviar el comentario.'); // Mostrar el mensaje de error de la API
+    throw error; // Re-lanzar para que recipe.tsx pueda manejarlo
+  }
 };
 
 export const fetchRecipeDetails = async (recipeIdParam: string, setRecipe: Function, setServings: Function, setUserRating: Function, setLoading: Function, setError: Function, setIsBookmarked: Function) => {
