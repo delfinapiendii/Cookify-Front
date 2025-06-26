@@ -31,7 +31,6 @@ const FIXED_CATEGORIES = [
   'dulce',
   'artesanal',
   'vegetariana',
-  'vegana',
   'postre',
 ];
 // ======================================

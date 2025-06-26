@@ -165,6 +165,33 @@ export const useRegisterPhaseOne = () => {
 
   return { form, errors, aliasSuggestions, handleInputChange, validateAndSubmit, canProceed };
 };
+
+export const useProfileInfo = async (setUserName:Function, setUserEmail:Function): Promise<boolean> => {
+  const token = await AsyncStorage.getItem('token');
+
+  try {
+    const res = await fetch(`${url}/api/v1/auth/profile`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      return ;
+    }
+    const data = await res.json();
+    setUserEmail(data.email);
+    setUserName(data.name);
+    return ;
+  } catch (err) {
+    console.log("Error en server");
+
+    return ;
+  }
+};
+
 export const useRegisterPhaseTwo = (email: string) => {
   const [form, setForm] = useState({ password: '', confirmPassword: '' });
   const [errors, setErrors] = useState({ password: '', confirmPassword: '' });

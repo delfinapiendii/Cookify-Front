@@ -31,7 +31,7 @@ export default function RegisterScreen() {
       if (success) setRegistrationPhase(2);
     } else {
       const success = await completeRegister();
-      if (success) router.push('/home');
+      if (success) router.push('/login');
     }
   };
 

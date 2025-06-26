@@ -7,14 +7,16 @@ import { router } from 'expo-router'; // Para la navegación
 import LogoHeader from './components/logoHeader';
 import NavBar from './components/navBar';
 import CustomAlertModal from './components/alert'; // Tu modal reutilizable
+import { useProfileInfo } from '../hooks/hooks';
+
 
 
 // Asumiendo que tendrás un archivo de estilos para el perfil
 import { styles } from './styles/profileStyles'; // Crea este archivo
 
 export default function ProfileScreen() {
-  const [userName, setUserName] = useState('Delfina'); // Esto vendría de un estado global de usuario o props
-  const [userEmail, setUserEmail] = useState('Delfi@gmail.com'); 
+  const [userName, setUserName] = useState(''); // Esto vendría de un estado global de usuario o props
+  const [userEmail, setUserEmail] = useState(''); 
   const [isEliminateAccountVisible, setisEliminateAccountVisible] = useState(false);
   
   
@@ -30,6 +32,11 @@ export default function ProfileScreen() {
       SplashScreen.hideAsync();
     }
   }, [fontsLoaded]);
+  
+
+  useEffect(() => {
+    useProfileInfo(setUserName,setUserEmail);
+  }, []);
 
   if (!fontsLoaded) {
     return null; // O un componente de carga mientras las fuentes se cargan
@@ -72,7 +79,7 @@ export default function ProfileScreen() {
 
   return (
     <>
-    <View style={{ flex: 1, backgroundColor: '#FFF' }}>
+    <View style={{ flex: 1, backgroundColor: '#FFF', alignContent:"center" }}>
     <ScrollView style={[styles.container, { paddingTop: 80, marginBottom: 80, backgroundColor: '#FFF' }]}>
       <LogoHeader/>
         <View >

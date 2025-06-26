@@ -43,9 +43,6 @@ const ProfileRecipesScreen =  () => {
     WorkSans_400Regular,
     WorkSans_700Bold,
   });
-  useEffect(() => {
-    console.log('Render actualizado - recipesSaved:', recipesSaved);
-  }, [recipesSaved]);
   
 
   useEffect(() => {
