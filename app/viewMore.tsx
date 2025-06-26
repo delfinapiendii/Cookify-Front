@@ -13,6 +13,8 @@ interface Recipe {
   id: string;
   title: string;
   imageUrl: string;
+  image?: string; // Added optional 'image' property
+  imagenes?: string;
   rating: number;
   chef: string;
 }
@@ -62,7 +64,14 @@ export default function FilteredRecipesScreen() {
         <Text style={localStyles.pageTitle}>{title || 'Recetas'}</Text>
 
         {parsedRecipes.length > 0 ? (
-          <RecipeGrid recipes={parsedRecipes.map(recipe => ({ ...recipe, image: recipe.imageUrl }))} onRecipePress={handleRecipePress} />
+          <RecipeGrid
+          recipes={parsedRecipes.map(recipe => ({
+            ...recipe,
+            image: recipe.image || recipe.imageUrl || recipe.imagenes || null
+          }))}
+          onRecipePress={handleRecipePress}
+        />
+        
         ) : (
           <Text style={localStyles.noRecipesText}>No se encontraron recetas.</Text>
         )}

@@ -98,7 +98,7 @@ const ProfileRecipesScreen =  () => {
           <View style={profileStyles.infoBox}>
             <Text style={profileStyles.infoLabel}>Valoración Promedio</Text>
             <View style={profileStyles.ratingDisplay}>
-              <Text style={profileStyles.infoValue}>{overallAverageRating.toFixed(1)}/10</Text>
+              <Text style={profileStyles.infoValue}>{overallAverageRating.toFixed(1)}/5</Text>
               <Ionicons name="star" size={18} color="#00000" />
             </View>
           </View>

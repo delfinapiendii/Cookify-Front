@@ -79,7 +79,6 @@ const pendingProfile = () => {
             <TouchableOpacity
               key={recipe.id}
               style={styles.recipeItemContainer} // Apply new style
-              onPress={() => router.push({ pathname: '/recipe', params: { id: recipe.id } })}
             >
               <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
               <View style={styles.recipeInfo}>

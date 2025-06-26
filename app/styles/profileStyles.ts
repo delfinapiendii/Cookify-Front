@@ -170,15 +170,13 @@ export const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginTop: 20,
     width: '100%',
-    flex: 1, // Allow it to take available space
-  },
+    flex: 1,},
   recipeItemContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
-    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -222,3 +220,4 @@ export const styles = StyleSheet.create({
 
 
 });
+export default  styles;

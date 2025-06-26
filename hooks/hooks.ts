@@ -561,6 +561,33 @@ export const searchRecipesByTitle = async (text: string, setRecipes: Function) =
   }
 };
 
+export const UsehandleDeleteRecipe = async (recipeIdParam: string, p0: () => void, p1: (error: any) => void) => {
+  const token = await AsyncStorage.getItem('token');
+  const userId = await AsyncStorage.getItem('userid');
+  console.log('Intentando eliminar receta con ID:', recipeIdParam);
+
+  try {
+      const response = await fetch(`${url}/api/v1/recetas/${recipeIdParam}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.log('Error eliminar:', response.status, errorData);
+        p1(errorData.message || 'No se pudo eliminar receta.');
+        return;
+      }
+  } catch (err) {
+    console.log('Error en eliminar con base:', err);
+    Alert.alert('Error', 'No se pudo eliminar  debido a un error de red.');
+    // Revertir el estado si la operación falla por error de red
+  }
+};
+
 export const searchByFilter = async (filterurl: string, searchQuery: string, setRecipes: Function) => {
 
   try {
@@ -703,7 +730,10 @@ export const publishRecipe = async (
       try {
         const json = JSON.parse(errorText);
         onError(json.message || 'Error al publicar la receta');
+                console.log(response);
+
       } catch {
+        console.log(response);
         onError(errorText);
       }
     } else {
@@ -738,7 +768,5 @@ export const uploadImage = async (imageUri) => {
     console.error('Error subiendo imagen:', error);
     return null;
   };
-
-
-
 };
+

@@ -286,3 +286,4 @@ noCommentsText: {
     marginTop: 10,
 }
  });
+ export default  styles;

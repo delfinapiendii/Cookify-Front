@@ -4,7 +4,7 @@ const { width, height } = Dimensions.get('window');
 
 const profileRecipesStyles = StyleSheet.create({
   recipeImage: {
-    width: '100%',
+    width: 140,
     height: 140,
   },
   recipeCard: {

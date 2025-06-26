@@ -201,7 +201,7 @@ centerlogo: {
     paddingBottom: 10,
       },
   recipeImage: {
-    width: '100%',
+    width: 140,
     height: 140,
     //opacity: 0.6,
 

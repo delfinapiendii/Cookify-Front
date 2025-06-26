@@ -8,7 +8,6 @@ import BottomNavigation from './components/navBar';
 import LogoHeader from './components/logoHeader'; 
 import categoriesData from '../assets/data/categories.json';
 import CustomAlertModal from './components/alert'; 
-import { loadDefaultRecipes } from './loadDefaultRecipes'; 
 
 const Home = () => {
   const [isCategoryNonExistVisible, setIsCategoryNonExistVisible] = useState(false);
@@ -16,7 +15,6 @@ const Home = () => {
   const { handleCategoryPress } = useCategoryNavigation(setIsCategoryNonExistVisible);
 
   useEffect(() => {
-    loadDefaultRecipes();
     fetchRecipes();
   }, []);
 

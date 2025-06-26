@@ -119,3 +119,4 @@ import { StyleSheet, Dimensions } from 'react-native';
     borderWidth: 1,
   },
  });
+ export default  loginStyles;

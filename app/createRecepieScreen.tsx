@@ -15,13 +15,13 @@ import React, { useState, useEffect } from 'react';
  import { router } from 'expo-router';
  import LogoHeader from './components/logoHeader';
  import NavBar from './components/navBar';
- import { styles } from './styles/createRecipeStyles';
+ import styles from './styles/createRecipeStyles';
  import ModalSelector from './components/modalSelector';
  import CustomAlertModal from './components/alert'; // Tu modal reutilizable
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
-import { publishRecipe, uploadImage } from '../hooks/hooks';
+import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes } from '../hooks/hooks';
 
 
 
@@ -51,7 +51,9 @@ import { publishRecipe, uploadImage } from '../hooks/hooks';
    const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
    const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); 
    const [image, setImage] = useState(null); 
-const [imageUrl, setImageUrl] = useState(null); 
+  const [imageUrl, setImageUrl] = useState(null); 
+  const { recipes, loading } = useCreatedRecipes();
+
 
 
    const [fontsLoaded] = useFonts({
@@ -114,7 +116,23 @@ const [imageUrl, setImageUrl] = useState(null);
    const handleConfirmReplace = () => {
      console.log('Usuario eligió "Sí", reemplazando receta...');
      setIsDuplicateRecipeModalVisible(false);
-     setIsSuccessModalVisible(true); 
+     try{
+       if (recipes && recipes.length > 0) {
+         const existingRecipe = recipes.find(recipe => recipe.title === recipeName);
+         console.log('Receta a reemplazar:', existingRecipe);
+         
+         if (existingRecipe) {
+           UsehandleDeleteRecipe(existingRecipe.id, () => {
+             console.log('Receta eliminada exitosamente');
+           }, (error) => {
+             console.error('Error al eliminar receta:', error);
+           });
+         }
+       }
+       setIsSuccessModalVisible(true); 
+     } catch (error) {
+       console.error('Error en el manejo de recetas duplicadas:', error);
+     }
    };
 
    const handleCancelPublication = () => {
@@ -126,18 +144,6 @@ const [imageUrl, setImageUrl] = useState(null);
      setIsSuccessModalVisible(false);
      
    };
-
-
-   const handleDeleteRecipe = () => {
-     console.log('Eliminando receta...');
-     setIsDeleteModalVisible(true); 
-   };
-
-   const handleConfirmDelete = () => {
-     setIsDeleteModalVisible(false); 
-   };
-   
-  
   
   const pickImage = async () => {
     const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -182,8 +188,6 @@ const [imageUrl, setImageUrl] = useState(null);
       return;
 
     }
-    
-  
     try {
       await publishRecipe(
         recipeName,
@@ -194,20 +198,22 @@ const [imageUrl, setImageUrl] = useState(null);
         steps,
         image,
         imageUrl,
-        () => setIsSuccessModalVisible(true),         
-        (msg) => alert(`Error: ${msg}`)              
-      );      
+        () => handleConfirm(),         
+        (msg) => {
+          if (msg) {
+            if (msg.includes('Ya existe una receta')) {
+              setIsDuplicateRecipeModalVisible(true);
+            } else {
+              alert(`Error: ${msg}`);
+            }
+          }
+        }        
+      );  
+        
     } catch (error) {
       console.error('Error al publicar receta:', error);
     }
-    setRecipeName(''),
-    setDescription(''),
-    setRecipeType(''),
-    setServings(''),
-    setIngredients([{ name: '', quantity: '' }]),
-    setSteps([{ description: '', imageUri: null, imageUrl: null }]),
-    setImage(''),
-    setImageUrl('')
+    
   };
 
   const pickImageForStep = async (stepIndex: number) => {
@@ -243,11 +249,6 @@ const [imageUrl, setImageUrl] = useState(null);
   };
 
 
-   const handleNavigationPress = (screen: string) => {
-     if (screen === 'Home') router.push('/home');
-     if (screen === 'Search') router.push('/SearchScreen');
-     if (screen === 'AddRecipe') router.push('/createRecepieScreen');
-   };
 
    return (
      <>
@@ -274,12 +275,14 @@ const [imageUrl, setImageUrl] = useState(null);
            style={[styles.input, nameError ? styles.inputError : {}]}
            
            placeholder="Nombre"
+           placeholderTextColor="#888"
            value={recipeName}
            onChangeText={setRecipeName}
          />
          <TextInput
            style={[styles.input, descError ? styles.inputError : {}]}
            placeholder="Descripción"
+           placeholderTextColor="#888"
            multiline
            value={description}
            onChangeText={setDescription}
@@ -302,7 +305,9 @@ const [imageUrl, setImageUrl] = useState(null);
            <TextInput
              style={styles.servingsInput}
              placeholder="Cantidad de porciones"
+             placeholderTextColor="#888"
              keyboardType="number-pad"
+
              value={servings}
              onChangeText={setServings}
            />
@@ -315,12 +320,14 @@ const [imageUrl, setImageUrl] = useState(null);
                <TextInput
                  style={[styles.ingredientInput, ingError ? styles.inputError : {}]}
                  placeholder="ej. Comino"
+                 placeholderTextColor="#888"
                  value={ingredient.name}
                  onChangeText={(value) => handleIngredientChange(index, 'name', value)}
                />
                <TextInput
                  style={styles.quantityInput}
                  placeholder="ej. 200 g"
+                 placeholderTextColor="#888"
                  value={ingredient.quantity}
                  onChangeText={(value) => handleIngredientChange(index, 'quantity', value)}
                />
@@ -344,6 +351,7 @@ const [imageUrl, setImageUrl] = useState(null);
       <TextInput
         style={[styles.stepInput, stepError ? styles.inputError : {}]}
         placeholder={`ej. Agrega la sal lentamente`}
+        placeholderTextColor="#888"
         multiline
         value={step.description} 
         onChangeText={(value) => handleStepChange(index, value)}
@@ -378,10 +386,6 @@ const [imageUrl, setImageUrl] = useState(null);
   </TouchableOpacity>
 </View>
 
-         <TouchableOpacity style={styles.removeRecipeButton} onPress={handleDeleteRecipe}>
-           <Ionicons name="trash-outline" size={20} color="#FF4D4D" style={styles.trashIcon} />
-           <Text style={styles.removeRecipeText}>Eliminar receta</Text>
-         </TouchableOpacity>
 
          <TouchableOpacity style={styles.publishButton} onPress={handlePublishRecipe}>
            <Text style={styles.publishButtonText}>Publicar</Text>
@@ -424,7 +428,6 @@ const [imageUrl, setImageUrl] = useState(null);
          <CustomAlertModal
            isVisible={isDeleteModalVisible}
            message="Receta Eliminada" 
-           onConfirm={handleConfirmDelete} 
            confirmText="Aceptar"
            showCancelButton={false}
          />
