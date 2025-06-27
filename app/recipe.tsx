@@ -71,6 +71,7 @@ const RecipeDetailScreen = () => {
   }
 
   const renderStars = (rating, onStarPress?) =>
+    
     [...Array(5)].map((_, i) => (
       <TouchableOpacity key={i} onPress={() => onStarPress?.(i + 1)}>
         <Ionicons
@@ -164,7 +165,6 @@ const RecipeDetailScreen = () => {
             <View style={styles.ratingAndServings}>
                 <View style={styles.ratingContainer}>
                     {renderStars(recipe.valoracionPromedio || 0)}
-                    <Text style={styles.ratingCount}>({recipe.comentarios?.length || 0})</Text>
                 </View>
                 <View style={styles.servingsContainer}>
                     <Text style={styles.servingsLabel}>Porciones</Text>

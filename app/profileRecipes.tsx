@@ -15,7 +15,7 @@ import RecipeGrid from './components/recipeGrid';
 import LogoComponent from './components/logoHeader';
 import NavBarComponent from './components/navBar';
 import { router } from 'expo-router';
-import { useCreatedRecipes, useSavedRecipes } from '../hooks/hooks';
+import { useCreatedRecipes, useSavedRecipes, useProfileInfo } from '../hooks/hooks';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface UserProfile {
@@ -28,12 +28,8 @@ interface UserProfile {
 const ProfileRecipesScreen =  () => {
  
 
-  const [profile, setProfile] = useState<UserProfile | null>({
-    id: '4554403b-da2e-4d55-872d-e66c374594c5',
-    name: 'Delfina',
-    alias: 'Delfina',
-    email: 'delfinapiendi@gmail.com',
-  });
+  const [userName, setUserName] = useState(''); // Esto vendría de un estado global de usuario o props
+  const [userEmail, setUserEmail] = useState(''); 
 
   const { recipes: recipesCreated, loading: loadingCreated } = useCreatedRecipes();
 
@@ -43,6 +39,11 @@ const ProfileRecipesScreen =  () => {
     WorkSans_400Regular,
     WorkSans_700Bold,
   });
+  
+  useEffect(() => {
+    useProfileInfo(setUserName,setUserEmail);
+  }, []);
+
   
 
   useEffect(() => {
@@ -88,7 +89,7 @@ const ProfileRecipesScreen =  () => {
     <View style={profileStyles.container}>
       <ScrollView contentContainerStyle={profileStyles.scrollViewContent}>
         <LogoComponent />
-        <Text style={profileStyles.userName}>{profile?.alias || 'Usuario'}</Text>
+        <Text style={profileStyles.userName}>{userName || 'Usuario'}</Text>
         <View style={profileStyles.divider} />
 
         <View style={profileStyles.infoContainer}>

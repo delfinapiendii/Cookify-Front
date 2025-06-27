@@ -276,8 +276,9 @@ const SearchScreen = () => {
           />
         </ScrollView>
 
-        <BottomNavigation />
+       
       </View>
+      <BottomNavigation />
     </>
   );
 };

@@ -29,7 +29,6 @@ export const useCreatedRecipes = () => {
 
         setRecipes(formatted);
       } catch (err) {
-        console.log('Error al obtener recetas creadas:', err);
       } finally {
         setLoading(false);
       }
@@ -88,7 +87,6 @@ export function useSavedRecipes() {
 
 
       } else {
-        console.error('Error al obtener recetas guardadas:', data.message || 'Error desconocido');
         setRecipesSaved([]); // Limpiar en caso de error
       }
     } catch (error) {
@@ -257,7 +255,6 @@ export const useRecipes = () => {
         }));
         setRecipes(formatted);
       } else {
-        console.error('Error al obtener recetas:', data.message);
       }
     } catch (error) {
       console.error('Error en la petición de recetas:', error);
@@ -664,7 +661,6 @@ export const fetchRecipes = async (setRecipes: Function) => {
       }));
       setRecipes(formatted);
     } else {
-      console.error('Error al obtener recetas:', data.message);
       setRecipes([]);
     }
   } catch (error) {
@@ -698,7 +694,6 @@ export const loadPendingRecipes = async (setRecipes: Function) => {
       }));
       setRecipes(formatted);
     } else {
-      console.error('Error al obtener recetas:', data.message);
       setRecipes([]);
     }
   } catch (error) {
@@ -797,3 +792,41 @@ export const uploadImage = async (imageUri) => {
   };
 };
 
+
+export const sendResetEmail = async (email: string) => {
+   console.log(email)
+
+  const res = await fetch(`${url}/api/v1/auth/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Error al enviar código');
+  return data;
+};
+
+export const verifyResetCode = async (email: string, code: string) => {
+  const res = await fetch(`${url}/api/v1/auth/verify-reset-code`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'Código inválido o expirado');
+  return data;
+};
+
+export const resetPassword = async (email: string, code: string, newPassword: string) => {
+  const res = await fetch(`${url}/api/v1/auth/reset-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, code, newPassword }),
+  });
+
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.message || 'No se pudo restablecer la contraseña');
+  return data;
+};

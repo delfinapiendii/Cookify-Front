@@ -13,6 +13,8 @@ import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fo
 import * as SplashScreen from 'expo-splash-screen';
 import { router, useNavigation, useLocalSearchParams } from 'expo-router';
 import CustomAlertModal from './components/alert'; 
+import { sendResetEmail, verifyResetCode, resetPassword,useProfileInfo } from '../hooks/hooks';
+
 
 
 import { loginStyles } from './styles/loginStyles'; 
@@ -23,6 +25,9 @@ const PasswordReset = () => {
   const [emailSent, setEmailSent] = useState(false);
   const [IsSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
 
+  const [userName, setUserName] = useState('');
+  const [email, setUserEmail] = useState('');
+
   
   const [newPassword, setNewPassword] = useState('');
   const [confirmNewPassword, setConfirmNewPassword] = useState('');
@@ -32,7 +37,6 @@ const PasswordReset = () => {
   const [currentPhase, setCurrentPhase] = useState('verifyCode');
 
   const navigation = useNavigation();
-  const { email } = useLocalSearchParams(); 
 
   const [fontsLoaded] = useFonts({
     WorkSans_400Regular,
@@ -48,120 +52,74 @@ const PasswordReset = () => {
   }, [fontsLoaded]);
 
   useEffect(() => {
-    const sendResetEmail = async () => {
+    useProfileInfo(setUserName,setUserEmail);
+    console.log(email);
+    const enviarCodigo = async () => {
       try {
-        const response = await fetch('http://10.0.2.2:3000/api/v1/auth/forgot-password', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email }),
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          console.log('Código enviado correctamente:', data.message);
-          setEmailSent(true);
-        } else {
-          console.error('Error al enviar código:', data.message);
-          //OOPS
-        }
-      } catch (error) {
-        console.error('Error en la petición:', error);
-        //OOPS
+        const data = await sendResetEmail(email);
+        console.log('Código enviado correctamente:', data.message);
+        setEmailSent(true);
+      } catch (error: any) {
+        console.error('Error al enviar código:', error.message);
+        // Redirigir a /error si querés
       }
     };
-
-    if (email) {
-      sendResetEmail();
-    }
+  
+    if (email) enviarCodigo();
   }, [email]);
-
-  const handleConfirmCode = async () => {
-    if (!code) {
-      setCodeError('Por favor ingrese el código');
-      return;
-    }
-    setCodeError('');
   
-    try {
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/verify-reset-code', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, code }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        console.log('Código verificado:', data.message);
-  
-        setCurrentPhase('setNewPassword');
-      } else {
-        console.error('Código incorrecto:', data.message);
-        setCodeError('El código ingresado es incorrecto o ha expirado');
-      }
-    } catch (error) {
-      console.error('Error en la petición de verificación:', error);
-    //OOPS
-        }
-  };
-  const handleSetNewPassword = async () => {
-    setNewPasswordError('');
-    setConfirmNewPasswordError('');
+const handleConfirmCode = async () => {
+  if (!code) {
+    setCodeError('Por favor ingrese el código');
+    return;
+  }
+  setCodeError('');
 
-    let hasPassError = false;
+  try {
+    const data = await verifyResetCode(email as string, code);
+    console.log('Código verificado:', data.message);
+    setCurrentPhase('setNewPassword');
+  } catch (error: any) {
+    console.error('Código incorrecto:', error.message);
+    setCodeError('El código ingresado es incorrecto o ha expirado');
+  }
+};
+const handleSetNewPassword = async () => {
+  setNewPasswordError('');
+  setConfirmNewPasswordError('');
+  let hasPassError = false;
 
-    if (!newPassword) {
-      setNewPasswordError('Por favor ingrese la nueva contraseña');
-      hasPassError = true;
-    }
-    if (!confirmNewPassword) {
-      setConfirmNewPasswordError('Por favor re-ingrese la contraseña');
-      hasPassError = true;
-    }
+  if (!newPassword) {
+    setNewPasswordError('Por favor ingrese la nueva contraseña');
+    hasPassError = true;
+  }
+  if (!confirmNewPassword) {
+    setConfirmNewPasswordError('Por favor re-ingrese la contraseña');
+    hasPassError = true;
+  }
 
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
-    if (newPassword && !passwordRegex.test(newPassword)) {
-      setNewPasswordError('La contraseña debe tener al menos 6 caracteres, incluyendo mayúsculas, minúsculas y números');
-      hasPassError = true;
-    }
-  
-    if (newPassword && confirmNewPassword && newPassword !== confirmNewPassword) {
-      setConfirmNewPasswordError('Las contraseñas no coinciden');
-      hasPassError = true;
-    }
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$/;
+  if (newPassword && !passwordRegex.test(newPassword)) {
+    setNewPasswordError('La contraseña debe tener al menos 6 caracteres, incluyendo mayúsculas, minúsculas y números');
+    hasPassError = true;
+  }
 
-    if (hasPassError) {
-      return; 
-    }
+  if (newPassword !== confirmNewPassword) {
+    setConfirmNewPasswordError('Las contraseñas no coinciden');
+    hasPassError = true;
+  }
 
-    try {
-      
-      const response = await fetch('http://10.0.2.2:3000/api/v1/auth/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, code,newPassword }), 
-      });
+  if (hasPassError) return;
 
-      const data = await response.json();
+  try {
+    const data = await resetPassword(email as string, code, newPassword);
+    console.log('Contraseña restablecida:', data.message);
+    setIsSuccessModalVisible(true);
+  } catch (error: any) {
+    console.error('No se pudo restablecer la contraseña:', error.message);
+  }
+};
 
-      if (response.ok) {
-        setIsSuccessModalVisible(true);
-      } else {
-        console.error('No se pudo restablecer la contraseña:', data.message);
-
-      }
-    } catch (error) {
-      console.error('Error en la petición de restablecimiento:', error);
-      //OOPS
-    }
-  };
 
   const handleConfirm = () => {
     setIsSuccessModalVisible(false);
@@ -202,7 +160,7 @@ const PasswordReset = () => {
             // Fase para ingresar y verificar el código
             <>
               <Text style={loginStyles.emailResetText}>
-                Ingrese el código enviado a {'\n'}{email}
+                Ingrese el código enviado al {'\n'}{email}{'\n'}Si no lo encuentra en la casilla de {'\n'}entrada, verfique su spam. 
               </Text>
 
               <TextInput

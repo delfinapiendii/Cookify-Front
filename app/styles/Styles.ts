@@ -222,7 +222,8 @@ centerlogo: {
 
   categoryCard: {
     height: 70,
-    width: 97,
+    minWidth:120,
+   
     marginRight: 10,
     borderRadius: 10,
     overflow: 'hidden',
@@ -230,6 +231,7 @@ centerlogo: {
   categoryImage: {
     width: '100%',
     height: '100%',
+    flex: 1,
   },
 
 

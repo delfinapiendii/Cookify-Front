@@ -5,7 +5,7 @@ const seacrhScreenStyles = StyleSheet.create({
     flex: 1,
     paddingTop: 58,
     marginBottom: 110,
-
+    paddingBottom:50,
   },
   searchBarContainer: {
     paddingHorizontal: 10,
