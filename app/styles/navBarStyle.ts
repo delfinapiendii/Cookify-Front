@@ -13,8 +13,9 @@ const navbarStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     paddingVertical: 10,
-    borderTopWidth: 1,
-    //backgroundColor: '#fff',
+    //borderTopWidth: 1,
+    backgroundColor: '#fff',
+     zIndex: 2,
   },
   navItem: {
     padding: 5,
@@ -29,6 +30,7 @@ const navbarStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
+    borderColor: '#FF9A16',
   },
 });
 

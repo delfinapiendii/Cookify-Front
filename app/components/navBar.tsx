@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import styles from '../styles/navBarStyle'; // ajusta la ruta
+import styles from '../styles/navBarStyle'; 
 import { router, usePathname } from 'expo-router';
 
 const BottomNavigation: React.FC = () => {
@@ -37,7 +37,7 @@ const BottomNavigation: React.FC = () => {
   };
 
   return (
-    <View style={[styles.bottomNavigation, { backgroundColor: '#FFFFFF' }]}>
+    <View style={styles.bottomNavigation}>
       <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
         <Ionicons name="home-outline" size={24} color={getIconColor('Home')} />
       </TouchableOpacity>

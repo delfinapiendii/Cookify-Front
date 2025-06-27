@@ -5,13 +5,14 @@ import {
   Text,
   TouchableOpacity,
   TextInput,
+  StyleSheet, 
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useNavigation } from 'expo-router';
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import styles from './styles/searchScreenStyles';
-import BottomNavigation from './components/navBar';
+import BottomNavigation from './components/navBar'; // Cambié a BottomNavigation si ese es el nombre correcto
 import LogoHeader from './components/logoHeader';
 import RecipeList from './components/recepieList';
 import { FontAwesome } from '@expo/vector-icons';
@@ -33,12 +34,16 @@ const FIXED_CATEGORIES = [
   'vegetariana',
   'postre',
 ];
+
+// Define la altura que necesita la NavBar más un pequeño margen
+  // (PaddingVertical de 10*2 + altura de icono ~40 + bottom de 20 + borde 2 + margen extra 8)
+  const NAV_BAR_SAFE_AREA_HEIGHT = 82; // Ajusta este valor si es necesario, 100px es un buen inicio.
 // ======================================
 
 const SearchScreen = () => {
   const navigation = useNavigation();
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-  const [isSortModalVisible, setSortModalVisible] = useState(false);
+  const [isSortModalVisible, setSortModal] = useState(false); 
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
   const [filter, setFilter] = useState<string | undefined>(undefined);
@@ -61,23 +66,18 @@ const SearchScreen = () => {
     }
   }, [fontsLoaded]);
 
-  // Modificación en updateSearch:
-  // Ahora, si hay un filtro activo (diferente de 'Nombre' que resetea el filtro),
-  // la búsqueda en el TextInput debería re-ejecutar el filtro con el nuevo texto.
+  
   const updateSearch = async (text: string) => {
     setSearchQuery(text);
     if (!filter || filter === 'Nombre') { // Si no hay filtro o el filtro es "Nombre"
       searchRecipesByTitle(text, setRecipes);
     } else {
-      // Si hay un filtro activo (Ingredientes, Sin el ingrediente),
-      // re-ejecuta el filtro con la nueva searchQuery
       hookfilter(filter === 'Ingredientes' ? 'ingrediente' : 'sin-ingrediente', text);
     }
   };
 
   const toggleFilterModal = () => setFilterModalVisible(!isFilterModalVisible);
-  const toggleSortModal = () => setSortModalVisible(!isSortModalVisible);
-  // Nuevo toggle para el modal de categorías
+  const toggleSortModal = () => setSortModal(!isSortModalVisible);
   const toggleCategoryModal = () => setCategoryModalVisible(!isCategoryModalVisible);
 
   useEffect(() => {
@@ -87,11 +87,7 @@ const SearchScreen = () => {
   // hookfilter ahora recibe la query como argumento
   const hookfilter = async (filterurl: string, query: string) => {
     try {
-      await searchByFilter(filterurl, query, setRecipes); // Usamos await aquí
-      // Puedes añadir una lógica para mostrar el error si no se encuentran recetas
-      // if (recipes.length === 0 && query !== '') {
-      //   setIsErrorSearchModalVisible(true);
-      // }
+      await searchByFilter(filterurl, query, setRecipes); 
     }
     catch (error) {
       console.error('Error al aplicar filtro:', error);
@@ -163,7 +159,11 @@ const SearchScreen = () => {
         break;
       case 'Usuario':
         // Asumiendo que 'chef' es la propiedad del usuario
-        sortedRecipes.sort((a: any, b: any) => a.chef.localeCompare(b.chef));
+        sortedRecipes.sort((a: any, b: any) => {
+          const chefA = a.chef || ''; // Usa string vacío si chef es null/undefined
+          const chefB = b.chef || ''; // Usa string vacío si chef es null/undefined
+          return chefA.localeCompare(chefB);
+        });
         break;
       default:
         // No hacer nada si la opción no es reconocida
@@ -176,10 +176,18 @@ const SearchScreen = () => {
     return <View><Text>Cargando fuentes...</Text></View>;
   }
 
+
   return (
     <>
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
-        <ScrollView style={[styles.containerHome]}>
+        {/* El ScrollView ocupa todo el espacio del View padre y desplaza su contenido */}
+        <ScrollView
+          style={{ flex: 1 }} // Asegura que el ScrollView pueda expandirse y usar el espacio
+          contentContainerStyle={[
+            styles.containerHome,
+            localStyles.scrollViewContentPadding,
+          ]}
+        >
           <LogoHeader />
 
           <View style={styles.searchBarContainer}>
@@ -229,7 +237,7 @@ const SearchScreen = () => {
             onRecipePress={(id) => handleRecipePress(id)}
           />
 
-          {/* Modal Filtros */}
+          {/* Modals... */}
           <ModalSelector
             visible={isFilterModalVisible}
             title="Filtrar"
@@ -238,11 +246,9 @@ const SearchScreen = () => {
             highlightedOption={filter}
             onSelectOption={(option) => {
               filterRecepies(option);
-              // El toggleFilterModal se maneja dentro de filterRecepies para cada opción
             }}
           />
 
-          {/* Modal Ordenar por */}
           <ModalSelector
             visible={isSortModalVisible}
             title="Ordenar por"
@@ -252,17 +258,15 @@ const SearchScreen = () => {
             onSelectOption={(option) => {
               setOrder(String(option));
               toggleSortModal();
-              sortRecipes(String(option)); // === LLAMADA A LA FUNCIÓN DE ORDENAMIENTO ===
+              sortRecipes(String(option));
             }}
           />
 
-          {/* NUEVO MODAL DE CATEGORÍAS */}
           <ModalSelector
             visible={isCategoryModalVisible}
             title="Selecciona una Categoría"
-            options={FIXED_CATEGORIES} // Usa las categorías fijas de createRecepieScreen
+            options={FIXED_CATEGORIES}
             onClose={toggleCategoryModal}
-            // Resalta la categoría actual si searchQuery coincide con una categoría fija
             highlightedOption={FIXED_CATEGORIES.includes(searchQuery) ? searchQuery : undefined}
             onSelectOption={handleCategorySelection}
           />
@@ -275,12 +279,43 @@ const SearchScreen = () => {
             showCancelButton={false}
           />
         </ScrollView>
-
-       
       </View>
-      <BottomNavigation />
+
+      {/* Nuevo contenedor para la BottomNavigation y su fondo */}
+      <View style={localStyles.navBarWrapper}>
+        {/* La capa blanca que ocultará el contenido */}
+        <View style={localStyles.navBarBackground} />
+        {/* Tu BottomNavigation existente */}
+        <BottomNavigation />
+      </View>
     </>
   );
 };
+
+// Se define un nuevo StyleSheet para los estilos locales específicos de este componente.
+const localStyles = StyleSheet.create({
+  scrollViewContentPadding: {
+    paddingBottom: NAV_BAR_SAFE_AREA_HEIGHT, // Sigue siendo necesario para empujar el contenido
+  },
+  navBarWrapper: {
+    position: 'absolute',
+    bottom: 0, // Posiciona el contenedor en la parte inferior de la pantalla
+    left: 0,
+    right: 0,
+    height: NAV_BAR_SAFE_AREA_HEIGHT + 20, // Altura de la NavBar + el offset 'bottom: 20' + un poco más si es necesario
+    // Asegúrate de que esta altura cubra completamente la NavBar y el espacio debajo de ella.
+    // Experimenta con este valor.
+    overflow: 'hidden', // Importante para que el contenido no se escape si el fondo es más grande
+  },
+  navBarBackground: {
+    position: 'absolute',
+    bottom: 0, // Inicia desde el fondo del wrapper
+    left: 0,
+    right: 0,
+    height: '100%', // Se expande para cubrir todo el wrapper
+    backgroundColor: '#fff', // El color blanco que ocultará el contenido
+    zIndex: 1, // Debe estar detrás de la NavBar pero delante del contenido
+  },
+});
 
 export default SearchScreen;
