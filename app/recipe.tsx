@@ -187,8 +187,12 @@ const RecipeDetailScreen = () => {
                 <View style={styles.divider} />
                 <Text style={styles.sectionTitle}>Ingredientes</Text>
                 {recipe.composiciones?.map((item, index) => ( // Agregado ?.
-                    <Text key={index} style={styles.listItem}>• {item.cantidad} {item.ingrediente}</Text>
-                ))}
+                  <Text key={index} style={styles.listItem}>
+            • {parseFloat(item.cantidad) % 1 === 0 
+                ? parseInt(item.cantidad) 
+                : parseFloat(item.cantidad).toFixed(2)} {item.ingrediente}
+        </Text>
+            ))}
             </View>
 
             <View style={styles.section}>

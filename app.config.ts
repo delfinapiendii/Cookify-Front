@@ -2,8 +2,8 @@ import { ExpoConfig, ConfigContext } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => ({
   ...config,
-  name: "Cookify",
-  slug: "cookify",
+  name: "cookify",
+  slug: "Cookify",
   version: "1.0.0",
   scheme: "cookify", // 👈 necesario para Linking
   orientation: "portrait",

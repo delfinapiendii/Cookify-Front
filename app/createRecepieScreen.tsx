@@ -514,7 +514,7 @@ const CreateRecipeScreen = () => {
           <ModalSelector
             visible={showPicker}
             title="Selecciona el tipo de receta"
-            options={['salado', 'dulce', 'artesanal', 'vegetariana', 'vegana', 'postre']}
+            options={['salado', 'dulce', 'vegetariana', 'vegana', 'postre']}
             highlightedOption={recipeType.charAt(0).toUpperCase() + recipeType.slice(1)}
             onClose={() => setShowPicker(false)}
             onSelectOption={(option: string) => {
@@ -541,7 +541,7 @@ const CreateRecipeScreen = () => {
             message="¡Receta creada con éxito!"
             onConfirm={() => {
                 closeModalSuccess();
-                router.push('/profile');
+                router.push('/pendingProfile');
             }}
             confirmText="Aceptar"
             showCancelButton={false}
