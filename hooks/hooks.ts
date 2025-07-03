@@ -259,7 +259,6 @@ export const useRecipes = () => {
       }
     } catch (error) {
       console.error('Error en la petición de recetas:', error);
-      alert('Error de red o servidor');
     }
   };
 
@@ -667,7 +666,6 @@ export const fetchRecipes = async (setRecipes: Function) => {
     }
   } catch (error) {
     console.error('Error en la petición de recetas:', error);
-    alert('Error de red o servidor');
   }
 };
 
@@ -700,7 +698,6 @@ export const loadPendingRecipes = async (setRecipes: Function) => {
     }
   } catch (error) {
     console.error('Error en la petición de recetas:', error);
-    alert('Error de red o servidor');
   }
 };
 

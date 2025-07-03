@@ -24,7 +24,7 @@ import CustomAlertModal from './components/alert';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
-import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes } from '../hooks/hooks';
+import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes, loadPendingRecipes } from '../hooks/hooks';
 import * as Network from 'expo-network';
 
 
@@ -47,6 +47,9 @@ const CreateRecipeScreen = () => {
   const [servings, setServings] = useState('');
   const [servingError, setServingError] = useState(false);
 
+  const [duplicateRemove, setduplicateRemove] = useState(false);
+
+
   const [ingredients, setIngredients] = useState([{ name: '', quantity: '' }]);
   const [ingredientNameErrors, setIngredientNameErrors] = useState<boolean[]>([]);
   const [ingredientQuantityErrors, setIngredientQuantityErrors] = useState<boolean[]>([]);
@@ -59,6 +62,9 @@ const CreateRecipeScreen = () => {
   const [isDuplicateRecipeModalVisible, setIsDuplicateRecipeModalVisible] = useState(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isCelularModalVisible, setisCelularModalVisible] = useState(false);
+
+
 
   const [images, setImages] = useState<any[]>([]);
   const [imageUrls, setImageUrls] = useState<string[]>([]);
@@ -67,6 +73,9 @@ const CreateRecipeScreen = () => {
 
 
   const { recipes } = useCreatedRecipes();
+  const [pendingRecipes, setpendingRecipes] = useState([]);  
+  
+
 
   const [fontsLoaded] = useFonts({
     WorkSans_400Regular,
@@ -143,7 +152,6 @@ const CreateRecipeScreen = () => {
 
   const handleConfirm = () => {
     console.log('receta creada con exito');
-    setIsSuccessModalVisible(true);
     setRecipeName('');
     setDescription('');
     setRecipeType('');
@@ -161,29 +169,21 @@ const CreateRecipeScreen = () => {
     setIngredientNameErrors(new Array(1).fill(false));
     setIngredientQuantityErrors(new Array(1).fill(false));
     setStepDescriptionErrors(new Array(1).fill(false));
+    if (duplicateRemove) {
+      setIsDeleteModalVisible(true);
+    }
+    else {
+      setIsSuccessModalVisible(true);
+    }
+    setduplicateRemove(false);
+    setIsDuplicateRecipeModalVisible(false);
+    setisCelularModalVisible(false);
   };
 
   const handleConfirmReplace = async () => {
     console.log('Usuario eligió "Sí", reemplazando receta...');
+    setduplicateRemove(true);
     setIsDuplicateRecipeModalVisible(false);
-    try {
-      if (recipes && recipes.length > 0) {
-        const existingRecipe = recipes.find(recipe => recipe.title === recipeName);
-        console.log('Receta a reemplazar:', existingRecipe);
-
-        if (existingRecipe) {
-          await UsehandleDeleteRecipe(
-            existingRecipe.id,
-            () => { console.log('Receta eliminada exitosamente'); },
-            (error) => { console.error('Error al eliminar receta:', error); Alert.alert("Error", "No se pudo eliminar la receta existente."); }
-          );
-        }
-      }
-      handleConfirm();
-    } catch (error) {
-      console.error('Error en el manejo de recetas duplicadas:', error);
-      Alert.alert("Error", "Ocurrió un error al intentar reemplazar la receta.");
-    }
   };
 
   const handleCancelPublication = () => {
@@ -228,7 +228,77 @@ const pickImage = async () => {
     }
   }
 };
-  
+
+const hookPublishRecipe = async () => {
+  if (duplicateRemove) {
+    const existingRecipeId = findExistingRecipe(recipeName);
+    console.log('Receta duplicada, se eliminara.',existingRecipeId);
+    try{
+      await UsehandleDeleteRecipe(existingRecipeId, () => console.log('Recipe deleted successfully'), (error) => console.error('Error deleting recipe:', error));
+      setIsDuplicateRecipeModalVisible(false);
+      setduplicateRemove(false);
+    }
+    catch (error) {
+      console.error('Error al eliminar receta duplicada:', error);
+      Alert.alert('Error', 'Ocurrió un error al intentar eliminar la receta duplicada.');
+      return;
+    }
+  }
+  try {
+    await publishRecipe(
+      recipeName,
+      description,
+      recipeType,
+      servings,
+      ingredients,
+      steps,
+      imageUrls,
+      () => handleConfirm(),
+      (msg) => {
+        if (msg && msg.includes('Ya existe una receta')) {
+          setIsDuplicateRecipeModalVisible(true);
+        } else {
+          Alert.alert('Error al Publicar', msg || 'Ocurrió un error desconocido al publicar la receta.');
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Error al publicar receta:', error);
+    Alert.alert('Error', 'Ocurrió un error de red o servidor al intentar publicar la receta.');
+  }
+}  
+const findExistingRecipe = (name: string) => {
+  const recipe = recipes.find((recipe) => recipe.title.toLowerCase() === name.toLowerCase());
+  if (recipe) {
+    console.log('Receta duplicada encontrada:', recipe.id);
+    return recipe.id;
+  } else {
+    loadPendingRecipes(setpendingRecipes);
+    const pendingRecipe = pendingRecipes.find((recipe) => recipe.title.toLowerCase() === name.toLowerCase());
+    if (pendingRecipe) {
+      console.log('Receta duplicada encontrada en pendientes:', pendingRecipe.id);
+      return pendingRecipe.id;
+    }
+  }
+  if (recipe) {
+    console.log('Receta duplicada encontrada:', recipe.id);
+  } else {
+    console.log('No se encontró receta duplicada.');
+  }
+
+  return recipe ? recipe.id : null;
+};  
+const checkforDuplicateRecipe = (name: string) => {
+  if (recipes && recipes.length > 0) {
+    const existingRecipeId = findExistingRecipe(name);
+    if (existingRecipeId) {
+      setIsDuplicateRecipeModalVisible(true);   
+      console.log('Receta duplicada encontrada:', existingRecipeId);
+      return true;
+    }
+  }
+  return false;
+};
 
   const handlePublishRecipe = async () => {
     let isValid = true;
@@ -299,27 +369,22 @@ const pickImage = async () => {
       return;
     }
 
+    const networkState = await Network.getNetworkStateAsync();
+    if (networkState.type === 'CELLULAR') {
+      setisCelularModalVisible(true);
+      return;
+    } 
+    else if (networkState.type === 'WIFI') {
+      try {
+        await hookPublishRecipe();
+      } catch (error) {
+      }
+    }  
+  };
+  const confirmCelularUpload = async () => {
     try {
-      await publishRecipe(
-        recipeName,
-        description,
-        recipeType,
-        servings,
-        ingredients,
-        steps,
-        imageUrls,
-        () => handleConfirm(),
-        (msg) => {
-          if (msg && msg.includes('Ya existe una receta')) {
-            setIsDuplicateRecipeModalVisible(true);
-          } else {
-            Alert.alert('Error al Publicar', msg || 'Ocurrió un error desconocido al publicar la receta.');
-          }
-        }
-      );
+      await hookPublishRecipe();    
     } catch (error) {
-      console.error('Error al publicar receta:', error);
-      Alert.alert('Error', 'Ocurrió un error de red o servidor al intentar publicar la receta.');
     }
   };
 
@@ -420,6 +485,7 @@ const pickImage = async () => {
             onChangeText={(value) => {
               setRecipeName(value);
               setNameError(false);
+              checkforDuplicateRecipe(value);
             }}
           />
           <TextInput
@@ -576,12 +642,32 @@ const pickImage = async () => {
             confirmText="Aceptar"
             showCancelButton={false}
           />
+          <CustomAlertModal
+            isVisible={isCelularModalVisible}
+            message="Estás usando datos móviles. ¿Quieres continuar con la publicación?"
+            onConfirm={() => {
+                closeModalSuccess();
+                confirmCelularUpload();
+                router.push('/pendingProfile');
+            }}
+            confirmText="Publicar"
+            showCancelButton={false}
+          />
 
           <CustomAlertModal
             isVisible={isDeleteModalVisible}
-            message="Receta Eliminada"
-            onConfirm={() => setIsDeleteModalVisible(false)}
+            message="Receta Reemplazada con éxito."
+            onConfirm={() => {
+              setIsDeleteModalVisible(false);
+              router.push('/pendingProfile');
+            }}
+            onCancel={() => {
+              setIsDeleteModalVisible(false);
+              router.push('/home');
+            }}
+
             confirmText="Aceptar"
+            cancelText='Volver'
             showCancelButton={false}
           />
 
