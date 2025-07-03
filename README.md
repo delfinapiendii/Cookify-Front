@@ -1,6 +1,18 @@
-# Welcome to your Expo app 👋
+# Welcome to your Cookify Front End app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Cookify is a mobile application designed to simplify the process of discovering, creating, and sharing cooking recipes. Built using [Expo](https://expo.dev) and React Native, this project focuses on delivering a seamless experience for Android users to explore a world of culinary possibilities.
+
+This project was developed as part of the **Applications Development 1** course at **UADE** (Universidad Argentina de la Empresa). It showcases the practical implementation of modern mobile development techniques and tools.
+
+
+## Features
+
+- Browse a wide variety of recipes.
+- Create and publish your own recipes with images and step-by-step instructions.
+- Manage ingredients and servings effortlessly.
+- Detect duplicate recipes and handle conflicts intuitively.
+- Optimized for Android devices with support for development builds, emulators, and Expo Go.
+
 
 ## Get started
 
@@ -25,26 +37,8 @@ In the output, you'll find options to open the app in a
 
 You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
 ## Learn more
 
-To learn more about developing your project with Expo, look at the following resources:
-
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+Inspired by **Cookiedio**, a platform that celebrates creativity in cooking and recipe sharing, Cookify aims to bring similar inspiration to mobile users with enhanced features and accessibility.
