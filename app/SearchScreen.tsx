@@ -69,9 +69,13 @@ const SearchScreen = () => {
   
   const updateSearch = async (text: string) => {
     setSearchQuery(text);
-    if (!filter || filter === 'Nombre') { // Si no hay filtro o el filtro es "Nombre"
+    if (!filter || filter === 'Nombre') { 
       searchRecipesByTitle(text, setRecipes);
-    } else {
+    }
+    if (order) { 
+      sortRecipes(order);
+    }
+    else {
       hookfilter(filter === 'Ingredientes' ? 'ingrediente' : 'sin-ingrediente', text);
     }
   };
@@ -95,36 +99,34 @@ const SearchScreen = () => {
     }
   };
 
-  const filterRecepies = async (option: string) => { // Cambiado a string para mayor claridad
-    setFilter(option); // Establecer el filtro seleccionado
+  const filterRecepies = async (option: string) => { 
+    setOrder(option); 
 
     if (option === 'Nombre') {
-      setFilter(undefined); // Resetear el filtro si es "Nombre"
-      updateSearch(searchQuery); // Re-ejecutar búsqueda por título
-      toggleFilterModal(); // Cerrar el modal de filtros
+      setFilter(undefined); 
+      updateSearch(searchQuery); 
+      toggleFilterModal(); 
     } else if (option === 'Categoría') {
-      toggleFilterModal(); // Cerrar el modal de filtros actual
-      toggleCategoryModal(); // Abrir el nuevo modal de categorías
-      // No se llama a hookfilter aquí, se hará cuando se seleccione una categoría
+      toggleFilterModal(); 
+      toggleCategoryModal(); 
     } else if (option === 'Ingredientes') {
-      toggleFilterModal(); // Cerrar el modal de filtros
-      hookfilter('ingrediente', searchQuery); // Usa searchQuery para ingredientes
+      toggleFilterModal(); 
+      hookfilter('ingrediente', searchQuery); 
     } else if (option === 'Sin el ingrediente') {
-      toggleFilterModal(); // Cerrar el modal de filtros
-      hookfilter('sin-ingrediente', searchQuery); // Usa searchQuery para sin-ingrediente
+      toggleFilterModal(); 
+      hookfilter('sin-ingrediente', searchQuery); 
     } else {
       console.error('Filtro desconocido:', option);
       fetchRecipes(setRecipes);
-      toggleFilterModal(); // Cerrar el modal de filtros
+      toggleFilterModal(); 
     }
   };
 
-  // Nueva función para manejar la selección de categoría
   const handleCategorySelection = (categoryName: string) => {
-    setSearchQuery(categoryName); // Poner la categoría seleccionada en el campo de búsqueda
-    hookfilter('categoria', categoryName); // Realizar la búsqueda por categoría
-    toggleCategoryModal(); // Cerrar el modal de categorías
-    setFilter('Categoría'); // Mantener el filtro de categoría activo
+    setSearchQuery(categoryName); 
+    hookfilter('categoria', categoryName); 
+    toggleCategoryModal(); 
+    setFilter('Categoría'); 
   };
 
   const closeModalSuccess = () => {
@@ -133,6 +135,7 @@ const SearchScreen = () => {
 
   const handleDoneSearch = () => {
     setFilter(undefined);
+    setOrder(undefined);
     setSearchQuery('');
     fetchRecipes(setRecipes);
   }
@@ -142,35 +145,33 @@ const SearchScreen = () => {
   };
 
   const sortRecipes = (option: string) => {
-    let sortedRecipes = [...recipes]; // Crea una copia para no mutar el estado directamente
-
+    let sortedRecipes = [...recipes]; // copia segura
+  
     switch (option) {
       case 'De A a Z':
-        sortedRecipes.sort((a: any, b: any) => a.title.localeCompare(b.title));
+        sortedRecipes.sort((a, b) => a.title.localeCompare(b.title));
         break;
       case 'De Z a A':
-        sortedRecipes.sort((a: any, b: any) => b.title.localeCompare(a.title));
+        sortedRecipes.sort((a, b) => b.title.localeCompare(a.title));
         break;
       case 'Novedad':
-        // === CORRECCIÓN AQUÍ ===
-        // Ordena por ID de forma descendente. Asume que IDs más altos son más nuevos.
-        // Convertimos a número en caso de que sean strings numéricos.
-        sortedRecipes.sort((a: any, b: any) => Number(b.id) - Number(a.id));
+        sortedRecipes.sort((a, b) => Number(b.id) - Number(a.id));
         break;
       case 'Usuario':
-        // Asumiendo que 'chef' es la propiedad del usuario
-        sortedRecipes.sort((a: any, b: any) => {
-          const chefA = a.chef || ''; // Usa string vacío si chef es null/undefined
-          const chefB = b.chef || ''; // Usa string vacío si chef es null/undefined
-          return chefA.localeCompare(chefB);
-        });
+        if (searchQuery.trim() !== '') {
+          sortedRecipes = sortedRecipes.filter((r) =>
+            r.chef.toLowerCase().includes(searchQuery.toLowerCase())
+          );
+        }
+        sortedRecipes.sort((a, b) => (a.chef || '').localeCompare(b.chef || ''));
         break;
       default:
-        // No hacer nada si la opción no es reconocida
         break;
     }
-    setRecipes(sortedRecipes); // Actualiza el estado con las recetas ordenadas
+  
+    setRecipes(sortedRecipes);
   };
+  
 
   if (!fontsLoaded) {
     return <View><Text>Cargando fuentes...</Text></View>;

@@ -246,7 +246,8 @@ export const useRecipes = () => {
       const data = await response.json();
 
       if (response.ok) {
-        const formatted = data.map((r) => ({
+        const sortedData = data.sort((a, b) => b.id - a.id); // orden ascendente por ID
+        const formatted = sortedData.map((r) => ({
           id: r.id,
           title: r.titulo,
           imageUrl: r.imagenes[0],
@@ -652,7 +653,8 @@ export const fetchRecipes = async (setRecipes: Function) => {
     const data = await response.json();
 
     if (response.ok) {
-      const formatted = data.map((r: any) => ({
+      const sortedData = data.sort((a, b) => b.id - a.id);
+      const formatted = sortedData.map((r: any) => ({
         id: r.id,
         title: r.titulo,
         image: r.imagenes[0],

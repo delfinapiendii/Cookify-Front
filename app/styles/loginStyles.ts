@@ -118,5 +118,38 @@ import { StyleSheet, Dimensions } from 'react-native';
     borderColor: 'red',
     borderWidth: 1,
   },
+  modal: {
+    marginTop: 40,
+    backgroundColor: '#fff',
+    borderColor: '#FF9A16',
+    borderWidth: 2,
+    padding: 20,
+    paddingTop: 50,
+    height: 300,
+    borderRadius: 30,
+  },
+  modalText: {
+    textAlign: 'center',
+    fontSize: 20,
+    marginBottom: 12,
+  },
+  confirmBtn: {
+    backgroundColor: '#ffc77d',
+    padding: 12,
+    marginTop: 20,
+    borderRadius: 20,
+  },
+  confirmBtnText: {
+    textAlign: 'center',
+    color: '#000',
+    fontSize: 18,
+  },
+  closeIcon: {
+    position: 'absolute',
+    top: 20,
+    right: 20,
+    zIndex: 10,
+  }
+  
  });
  export default  loginStyles;

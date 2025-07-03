@@ -60,7 +60,7 @@ const ConnectionErrorScreen: React.FC<ConnectionErrorScreenProps> = ({ onGoBack 
           Lamentablemente no te podemos conectar a nuestro sitio en este momento.
         </Text>
         <Text style={connectionErrorStyles.messageText}>
-          Puede que sea un problema de servidor. Intentelo mas tarde.
+        Verifica tu conexión a internet y si el problema persiste intentelo mas tarde. 
         </Text>
        
       </View>
