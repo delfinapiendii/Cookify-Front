@@ -8,6 +8,8 @@ import {
   StyleSheet,
   Modal,
   Alert, 
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { Ionicons, AntDesign } from '@expo/vector-icons';
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
@@ -23,6 +25,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
 import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes } from '../hooks/hooks';
+import * as Network from 'expo-network';
+
+
+const { width } = Dimensions.get('window');
+const ITEM_MARGIN_HORIZONTAL = 10;  
+const TOTAL_MARGIN = ITEM_MARGIN_HORIZONTAL * 2;
+const IMAGE_MAIN_WIDTH = width - TOTAL_MARGIN;
+const ADD_BUTTON_WIDTH = 120; 
 
 const CreateRecipeScreen = () => {
   const [recipeName, setRecipeName] = useState('');
@@ -50,9 +60,11 @@ const CreateRecipeScreen = () => {
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
 
-  const [image, setImage] = useState<any>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [images, setImages] = useState<any[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
   const [imageError, setImageError] = useState(false); 
+  const carouselData = [...imageUrls, 'ADD_BUTTON'];
+
 
   const { recipes } = useCreatedRecipes();
 
@@ -138,15 +150,14 @@ const CreateRecipeScreen = () => {
     setServings('');
     setIngredients([{ name: '', quantity: '' }]);
     setSteps([{ description: '', imageUri: null, imageUrl: null }]);
-    setImage(null);
-    setImageUrl(null);
+    setImages([]);
+    setImageUrls([]); 
 
-    // Limpiar todos los errores
     setNameError(false);
     setDescError(false);
     setTypeError(false);
     setServingError(false);
-    setImageError(false); // Limpiar error de imagen
+    setImageError(false); 
     setIngredientNameErrors(new Array(1).fill(false));
     setIngredientQuantityErrors(new Array(1).fill(false));
     setStepDescriptionErrors(new Array(1).fill(false));
@@ -184,52 +195,46 @@ const CreateRecipeScreen = () => {
     setIsSuccessModalVisible(false);
   };
 
-  const pickImage = async () => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+const pickImage = async () => {
+  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+  if (!permissionResult.granted) {
+    Alert.alert("Permiso Denegado", "Necesitamos permiso para acceder a tu galería.");
+    return;
+  }
 
-    if (!permissionResult.granted) {
-      Alert.alert("Permiso Denegado", "Necesitamos permiso para acceder a tu galería.");
-      return;
-    }
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsMultipleSelection: false,
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 1,
+  });
 
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+  if (!result.canceled) {
+    const selected = result.assets[0];
 
-
-    if (!result.canceled) {
-      const imageSelected = result.assets[0];
-
-      setImage(imageSelected);
-      setImageError(false); 
-
-      try {
-        const uploadedUrl = await uploadImage(imageSelected.uri);
-        if (uploadedUrl) {
-          setImageUrl(uploadedUrl);
-        } else {
-          Alert.alert("Error", "No se pudo subir la imagen principal.");
-          setImage(null);
-          setImageUrl(null);
-        }
-      } catch (uploadError) {
-        console.error("Error al subir la imagen principal:", uploadError);
-        Alert.alert("Error", "Fallo en la carga de la imagen principal.");
-        setImage(null);
-        setImageUrl(null);
+    try {
+      const uploadedUrl = await uploadImage(selected.uri);
+      console.log("Imagen subida con éxito:", uploadedUrl);
+      if (uploadedUrl) {
+        setImageUrls(prev => [...prev, uploadedUrl]); 
+        setImageError(false); 
+      } else {
+        Alert.alert("Error", "No se pudo subir la imagen.");
       }
+    } catch (error) {
+      console.error("Error al subir la imagen:", error);
+      Alert.alert("Error", "Fallo en la carga de imagen.");
     }
-  };
-
+  }
+};
+  
 
   const handlePublishRecipe = async () => {
     let isValid = true;
 
     
-    if (!image && !imageUrl) { 
+    if (!images && !imageUrls) { 
       setImageError(true);
       isValid = false;
     } else {
@@ -302,8 +307,7 @@ const CreateRecipeScreen = () => {
         servings,
         ingredients,
         steps,
-        image,
-        imageUrl,
+        imageUrls,
         () => handleConfirm(),
         (msg) => {
           if (msg && msg.includes('Ya existe una receta')) {
@@ -361,6 +365,7 @@ const CreateRecipeScreen = () => {
     }
   };
 
+  
   return (
     <>
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
@@ -368,19 +373,44 @@ const CreateRecipeScreen = () => {
           <LogoHeader />
 
           <Text style={styles.title}></Text>
-
-          <TouchableOpacity style={[styles.imagePicker, imageError ? styles.inputError : {}]} onPress={pickImage}>
-            {imageUrl ? (
-              <Image source={{ uri: imageUrl }} style={styles.selectedImage} />
-            ) : image ? (
-              <Image source={{ uri: image.uri }} style={styles.selectedImage} />
-            ) : (
-              <View style={styles.cameraIconContainer}>
-                <Ionicons name="camera" size={40} color="#888" />
-                <Ionicons name="add-circle" size={20} color="#555" style={styles.addIcon} />
-              </View>
-            )}
-          </TouchableOpacity>
+<View style={[styles.carouselContainer, imageError ? styles.inputErrorCarrousel : {}]}>
+      <FlatList
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        data={carouselData}
+        keyExtractor={(item, index) => item + index.toString()}
+        renderItem={({ item }) => {
+          if (item === 'ADD_BUTTON') {
+            return (
+              <TouchableOpacity
+                style={styles.imagePickerCarrousel}
+                onPress={pickImage}
+              >
+                <View style={styles.cameraIconContainerCarrousel}>
+                  <Ionicons name="camera" size={40} color="#888" />
+                  <Ionicons name="add-circle" size={20} color="#555" style={styles.addIconCarrousel} />
+                </View>
+              </TouchableOpacity>
+            );
+          } else {
+            return (
+              <Image
+                source={{ uri: item }}
+                style={styles.selectedImageCarrusel}
+              />
+            );
+          }
+        }}
+        contentContainerStyle={{ paddingHorizontal: ITEM_MARGIN_HORIZONTAL }} 
+      />
+      {/* Nueva vista para la flecha de navegación, visible solo si hay más de 1 imagen (+ el botón) */}
+      {carouselData.length > 1 && (
+        <View style={styles.carouselArrowContainer}>
+          <Ionicons name="chevron-forward-circle" size={30} color="#555" />
+        </View>
+      )}
+    </View>
 
           <TextInput
             style={[styles.input, nameError ? styles.inputError : {}]}

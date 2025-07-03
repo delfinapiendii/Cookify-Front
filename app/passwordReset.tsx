@@ -61,7 +61,6 @@ const PasswordReset = () => {
         setEmailSent(true);
       } catch (error: any) {
         console.error('Error al enviar código:', error.message);
-        // Redirigir a /error si querés
       }
     };
   
@@ -157,7 +156,6 @@ const handleSetNewPassword = async () => {
           <Text style={loginStyles.title}>Recupero de contraseña</Text>
 
           {currentPhase === 'verifyCode' ? (
-            // Fase para ingresar y verificar el código
             <>
               <Text style={loginStyles.emailResetText}>
                 Ingrese el código enviado al {'\n'}{email}{'\n'}Si no lo encuentra en la casilla de {'\n'}entrada, verfique su spam. 
@@ -170,7 +168,7 @@ const handleSetNewPassword = async () => {
                 value={code}
                 onChangeText={setCode}
                 autoCapitalize="none"
-                keyboardType="numeric" // Asumiendo que el código es numérico
+                keyboardType="numeric" 
               />
               {codeError ? <Text style={loginStyles.errorMessage}>{codeError}</Text> : null}
 
@@ -179,7 +177,6 @@ const handleSetNewPassword = async () => {
               </TouchableOpacity>
             </>
           ) : (
-            // Fase para ingresar la nueva contraseña
             <>
               <Text style={loginStyles.emailResetText}>
                 Ingrese su nueva contraseña

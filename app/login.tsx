@@ -27,7 +27,7 @@ const LoginScreen = () => {
   const [passwordError, setPasswordError] = useState('');
   const [showSaveCredentials, setshowSaveCredentials] = useState(false);
   const [showWantUseCredentials, setshowWantUseCredentials] = useState(false);
-  const slideAnim = useState(new Animated.Value(200))[0]; // Empieza 200px abajo
+  const slideAnim = useState(new Animated.Value(200))[0];  
 
 
 

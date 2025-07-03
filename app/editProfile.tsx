@@ -43,9 +43,8 @@ const PasswordReset = () => {
     try {
       
     } catch (error) {}
-    // Aquí puedes agregar la lógica para actualizar el perfil del usuario
     Alert.alert('Perfil actualizado', 'Tu perfil ha sido actualizado correctamente.');
-    navigation.goBack(); // Regresa a la pantalla anterior
+    navigation.goBack(); 
   };
 
 

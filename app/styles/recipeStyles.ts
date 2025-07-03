@@ -1,31 +1,17 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+const { width } = Dimensions.get('window');
 
 export const styles = StyleSheet.create({
    container: {
      flex: 1,
      backgroundColor: '#fff',
    },
-   imageContainer: {
-    position: 'relative',
-    width: '100%',
-    height: 250,
-  },
-  
   recipeImage: {
     width: '100%',
     height: '100%',
     
   },
   
-  backButton: {
-    position: 'absolute',
-    top: 58, // o el valor que necesites para separarlo del borde superior (considera status bar)
-    left: 15,
-    backgroundColor: '#FF9A16',
-    borderRadius: 20,
-    padding: 8,
-    zIndex: 10,
-  },
   
   recipeInfo: {
     marginTop: -30, // Esto sube la sección blanca encima de la imagen
@@ -284,6 +270,45 @@ noCommentsText: {
     textAlign: 'center',
     fontStyle: 'italic',
     marginTop: 10,
-}
+},
+imageContainer: {
+  width: '100%',
+  height: 250, // Altura fija para el contenedor del carrusel
+  position: 'relative', // Necesario para posicionar las flechas de forma absoluta
+  backgroundColor: '#f0f0f0', // Color de fondo mientras carga o si no hay imagen
+},
+carouselImage: {
+  width: width, // Cada imagen ocupa el ancho completo de la pantalla
+  height: '100%',
+},
+arrowButtonLeft: {
+  position: 'absolute',
+  left: 10,
+  top: '50%',
+  transform: [{ translateY: -15 }], // Para centrar verticalmente
+  zIndex: 1, // Asegura que la flecha esté por encima de la imagen
+  //backgroundColor: 'rgba(0,0,0,0.4)', // Fondo semitransparente para mejor visibilidad
+  borderRadius: 20,
+  padding: 5,
+},
+arrowButtonRight: {
+  position: 'absolute',
+  right: 10,
+  top: '50%',
+  transform: [{ translateY: -15 }], // Para centrar verticalmente
+  zIndex: 1, // Asegura que la flecha esté por encima de la imagen
+  //backgroundColor: 'rgba(0,0,0,0.4)', // Fondo semitransparente para mejor visibilidad
+  borderRadius: 20,
+  padding: 5,
+},
+backButton: {
+  position: 'absolute',
+  top: 40, // Ajusta según la barra de estado/notch
+  left: 15,
+  zIndex: 1,
+  backgroundColor: 'rgba(0,0,0,0.4)', // Fondo semitransparente
+  borderRadius: 20,
+  padding: 5,
+},
  });
  export default  styles;

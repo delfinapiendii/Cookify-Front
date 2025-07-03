@@ -24,12 +24,12 @@ export default function Index() {
       <Stack.Screen options={{ headerShown: false }} />
       <View style={styles.container}>
         <Image
-          source={require('../assets/images/burger.png')} // Asegúrate de colocar la imagen en assets y renombrarla
+          source={require('../assets/images/burger.png')} 
           style={styles.image}
           resizeMode="contain"
         />
         <Image
-          source={require('../assets/images/cookifyOrange.png')} // Asegúrate de colocar la imagen en assets y renombrarla
+          source={require('../assets/images/cookifyOrange.png')} 
           style={styles.logo}
           resizeMode="contain"
         />

@@ -1,4 +1,16 @@
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Dimensions } from 'react-native';
+const { width } = Dimensions.get('window');
+const IMAGE_WIDTH = width - 40; // Por ejemplo, 20 de padding a cada lado
+const BUTTON_WIDTH = 100; // Ancho del botón de añadir
+const ITEM_MARGIN_HORIZONTAL = 10;
+const TOTAL_MARGIN = ITEM_MARGIN_HORIZONTAL * 2;
+const IMAGE_VIEW_WIDTH = width - TOTAL_MARGIN; // Ancho para las imágenes mostradas
+
+const ADD_BUTTON_PREVIEW_WIDTH = 120; // Ancho que quieres que tenga el botón de añadir.
+
+// El ancho real que el FlatList debe considerar para cada elemento para que 'pagingEnabled' funcione bien
+// es la suma del ancho del item más sus márgenes horizontales.
+const SNAP_TO_INTERVAL_WIDTH = IMAGE_VIEW_WIDTH + TOTAL_MARGIN; // Para que el paging se ajuste a una imagen completa
 
 const styles = StyleSheet.create({
   container: {
@@ -332,6 +344,62 @@ const styles = StyleSheet.create({
   inputError: {
     borderColor: 'red',
     borderWidth: 1,
+  },
+  
+
+  cameraIconContainerCarrousel: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  addIconCarrousel: {
+    position: 'absolute',
+    bottom: -5,
+    right: -5,
+    backgroundColor: '#fff',
+    borderRadius: 10,
+  },
+  inputErrorCarrousel: {
+    borderColor: 'red',
+    borderWidth: 1,
+  },
+  carouselContainer: {
+    height: 200, // Altura fija para el carrusel
+    width: '100%', // Ancho completo del contenedor
+    marginVertical: 15,
+    overflow: 'hidden',
+    position: 'relative', // Necesario para posicionar la flecha de forma absoluta
+  },
+
+  selectedImageCarrusel: {
+    width: width-80, // La imagen ocupa este ancho
+    height: '100%',
+    borderRadius: 10,
+    resizeMode: 'cover',
+    marginHorizontal: ITEM_MARGIN_HORIZONTAL, // Margen a los lados de cada imagen
+  },
+
+  imagePickerCarrousel: {
+    width: width - 80, 
+    height: '100%',
+    backgroundColor: '#eee',
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginHorizontal: ITEM_MARGIN_HORIZONTAL, // Margen a los lados del botón
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+  },
+
+  // Nuevo estilo para la flecha de navegación
+  carouselArrowContainer: {
+    position: 'absolute',
+    right: 0, // Pegado al borde derecho del carouselContainer
+    top: '50%', // Centrado verticalmente
+    transform: [{ translateY: -15 }], // Ajuste para centrar el icono (mitad de su tamaño)
+    backgroundColor: 'rgba(255,255,255,0.7)', // Fondo semi-transparente para la flecha
+    borderRadius: 15,
+    padding: 2,
   },
   
 });

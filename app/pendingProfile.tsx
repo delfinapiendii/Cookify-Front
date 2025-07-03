@@ -22,7 +22,7 @@ import { loadPendingRecipes } from '../hooks/hooks';
 const pendingProfile = () => {
 
   const navigation = useNavigation();
-  const [recipes, setRecipes] = useState([]); // Estado para recetas
+  const [recipes, setRecipes] = useState([]);  
 
 
   const [fontsLoaded] = useFonts({
@@ -44,9 +44,9 @@ const pendingProfile = () => {
   interface PendingRecipe {
     id: string;
     title: string;
-    image: string; // Assuming this is the URL for the image
-    estado: string; // The status, e.g., "En proceso de revisión"
-    createdAt: string; // Or a more appropriate date field if available
+    image: string;  
+    estado: string; 
+    createdAt: string; 
   }
   
 

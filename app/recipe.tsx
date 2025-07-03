@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   ScrollView,
   View,
@@ -9,6 +9,8 @@ import {
   Modal,
   ActivityIndicator,
   Alert,
+  Dimensions,
+  FlatList,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
@@ -22,6 +24,8 @@ import {
   postComment,
   fetchRecipeDetails
 } from '../hooks/hooks';
+const { width } = Dimensions.get('window');
+const CAROUSEL_ITEM_WIDTH = width;
 
 const RecipeDetailScreen = () => {
   const { id: recipeIdParam } = useLocalSearchParams<{ id: string }>();
@@ -36,6 +40,8 @@ const RecipeDetailScreen = () => {
   const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
   const [tempRating, setTempRating] = useState(0);
   const [comment, setComment] = useState('');
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const flatListRef = useRef<FlatList>(null);
 
   const [fontsLoaded] = useFonts({ WorkSans_400Regular, WorkSans_700Bold });
 
@@ -136,17 +142,66 @@ const RecipeDetailScreen = () => {
       console.error('Error en handlePostComment:', error);
     }
   };
+  const goToNextImage = () => {
+    if (recipe.imagenes && recipe.imagenes.length > 1) {
+      const nextIndex = (currentImageIndex + 1) % recipe.imagenes.length;
+      setCurrentImageIndex(nextIndex);
+      flatListRef.current?.scrollToIndex({ index: nextIndex, animated: true });
+    }
+  };
+
+  // Función para desplazar a la imagen anterior
+  const goToPreviousImage = () => {
+    if (recipe.imagenes && recipe.imagenes.length > 1) {
+      const prevIndex = (currentImageIndex - 1 + recipe.imagenes.length) % recipe.imagenes.length;
+      setCurrentImageIndex(prevIndex);
+      flatListRef.current?.scrollToIndex({ index: prevIndex, animated: true });
+    }
+  };
 
   const mainImageUrl = recipe.imagenes?.[0] || 'https://via.placeholder.com/400x200?text=No+Image';
 
   return (
         <ScrollView style={styles.container}>
         <View style={styles.imageContainer}>
-            <Image source={{ uri: mainImageUrl }} style={styles.recipeImage} resizeMode="cover" />
-            <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-                <Ionicons name="arrow-back" size={28} color="#fff" />
+        {/* Cambia <Image> por <FlatList> para el carrusel de imágenes */}
+        <FlatList
+          ref={flatListRef}
+          horizontal
+          pagingEnabled // Hace que se desplace una imagen completa a la vez
+          showsHorizontalScrollIndicator={false}
+          data={recipe.imagenes} // Usar el array completo de imágenes
+          keyExtractor={(item, index) => item + index.toString()}
+          renderItem={({ item }) => (
+            <Image source={{ uri: item }} style={styles.carouselImage} resizeMode="cover" />
+          )}
+          onScroll={e => {
+            const contentOffsetX = e.nativeEvent.contentOffset.x;
+            const index = Math.round(contentOffsetX / CAROUSEL_ITEM_WIDTH);
+            if (index !== currentImageIndex) {
+              setCurrentImageIndex(index);
+            }
+          }}
+          scrollEventThrottle={16} // Para que onScroll sea más responsivo
+        />
+
+        {/* Flechas de navegación (visibles solo si hay más de una imagen) */}
+        {recipe.imagenes && recipe.imagenes.length > 1 && (
+          <>
+            <TouchableOpacity style={styles.arrowButtonLeft} onPress={goToPreviousImage}>
+              <Ionicons name="chevron-back" size={25} color="#fff" />
             </TouchableOpacity>
-        </View>
+            <TouchableOpacity style={styles.arrowButtonRight} onPress={goToNextImage}>
+              <Ionicons name="chevron-forward" size={25} color="#fff" />
+            </TouchableOpacity>
+          </>
+        )}
+
+        <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={28} color="#fff" />
+        </TouchableOpacity>
+      </View>
+
 
         <View style={styles.recipeInfo}>
             <View style={styles.bookmarkContainer}>

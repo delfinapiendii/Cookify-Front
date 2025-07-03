@@ -1,13 +1,12 @@
-// components/ConnectionErrorScreen.tsx
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useNavigation } from 'expo-router'; // Assuming you are using Expo Router
+import { useNavigation } from 'expo-router'; 
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
 import * as SplashScreen from 'expo-splash-screen';
 
 interface ConnectionErrorScreenProps {
-  onGoBack?: () => void; // Optional prop if you want to override default goBack
+  onGoBack?: () => void; 
 }
 
 const ConnectionErrorScreen: React.FC<ConnectionErrorScreenProps> = ({ onGoBack }) => {
@@ -27,7 +26,7 @@ const ConnectionErrorScreen: React.FC<ConnectionErrorScreenProps> = ({ onGoBack 
   }, [fontsLoaded]);
 
   if (!fontsLoaded) {
-    return null; // Or a loading spinner for fonts
+    return null; 
   }
 
   const handleGoBack = () => {
@@ -36,10 +35,7 @@ const ConnectionErrorScreen: React.FC<ConnectionErrorScreenProps> = ({ onGoBack 
     } else if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      // Fallback if there's no screen to go back to (e.g., if this is the first screen)
-      // You might want to navigate to a home screen instead
       console.log('Cannot go back, no previous screen in stack.');
-      // router.push('/'); // Example: navigate to home if using Expo Router
     }
   };
 
@@ -71,23 +67,23 @@ const ConnectionErrorScreen: React.FC<ConnectionErrorScreenProps> = ({ onGoBack 
 const connectionErrorStyles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f8f8', // Light gray background
+    backgroundColor: '#f8f8f8', 
     alignItems: 'center',
-    paddingTop: 60, // Adjust for status bar
+    paddingTop: 60, 
   },
   backButton: {
     position: 'absolute',
-    top: 50, // Adjust as needed
+    top: 50, 
     left: 20,
     zIndex: 10,
-    padding: 10, // Make touchable area larger
+    padding: 10, 
   },
   content: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: 30,
-    marginTop: -50, // Pull content up slightly to accommodate back button
+    marginTop: -50, 
   },
   oopsText: {
     fontSize: 25,

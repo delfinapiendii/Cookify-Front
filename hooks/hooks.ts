@@ -711,8 +711,7 @@ export const publishRecipe = async (
   servings: string,
   ingredients: { name: string; quantity: string }[],
   steps: { description: string; imageUrl: string | null }[],
-  image: any,
-  imageUrl: string | null,
+  imageUrls: string[], // 🔄 cambio aquí
   onSuccess: () => void,
   onError: (message: string) => void
 ) => {
@@ -724,6 +723,7 @@ export const publishRecipe = async (
     }
 
     const token = await AsyncStorage.getItem('token');
+    
     const response = await fetch(`${url}/api/v1/recetas`, {
       method: 'POST',
       headers: {
@@ -745,7 +745,7 @@ export const publishRecipe = async (
           descripcion: step.description,
           ...(step.imageUrl ? { imagenUrl: step.imageUrl } : {}),
         })),
-        imagenes: [imageUrl || (image ? image.uri : '')],
+        imagenes: imageUrls, // 🔄 cambio aquí
       }),
     });
 
@@ -754,8 +754,7 @@ export const publishRecipe = async (
       try {
         const json = JSON.parse(errorText);
         onError(json.message || 'Error al publicar la receta');
-                console.log(response);
-
+        console.log(response);
       } catch {
         console.log(response);
         onError(errorText);
@@ -767,6 +766,7 @@ export const publishRecipe = async (
     onError(err.message || 'Error de red');
   }
 };
+
 export const uploadImage = async (imageUri) => {
   const formData = new FormData();
   const file = {
