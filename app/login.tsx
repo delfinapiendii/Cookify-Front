@@ -87,7 +87,6 @@ const LoginScreen = () => {
     } else {
       console.log('Error en el login con credenciales guardadas:', message || 'Error desconocido');
     }
-    console.log('Logueando con:', email, pass);
     setshowWantUseCredentials(false);
   };
 

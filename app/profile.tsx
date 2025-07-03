@@ -7,7 +7,7 @@ import { router } from 'expo-router'; // Para la navegación
 import LogoHeader from './components/logoHeader';
 import NavBar from './components/navBar';
 import CustomAlertModal from './components/alert'; // Tu modal reutilizable
-import { useProfileInfo } from '../hooks/hooks';
+import { useProfileInfo , useDeleteProfile} from '../hooks/hooks';
 
 
 
@@ -73,8 +73,9 @@ export default function ProfileScreen() {
 
   const handleConfirmDelete = () => {
     setisEliminateAccountVisible(false);
+    useDeleteProfile();
     console.log('Cuenta eliminada');
-    router.push('/login'); // Redirigir a la pantalla de inicio o donde sea necesario
+    router.push('/'); // Redirigir a la pantalla de inicio o donde sea necesario
   };
 
   return (
@@ -118,7 +119,8 @@ export default function ProfileScreen() {
            message="¿Seguro que desea eliminar su cuenta?  Esta acción no es reversible" 
            onConfirm={handleConfirmDelete} 
            confirmText="Confirmar"
-           showCancelButton={false}
+           cancelText='Cancelar'
+           onCancel={() => setisEliminateAccountVisible(false)}
          />
 
       {/* Barra de Navegación Inferior */}

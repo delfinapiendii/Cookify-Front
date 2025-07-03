@@ -17,13 +17,15 @@ import CustomAlertModal from './components/alert';
 
 import { styles } from './styles/profileStyles'; 
 import LogoHeader from './components/logoHeader';
+import { editProfile, useProfileInfo } from '../hooks/hooks';
 
 const PasswordReset = () => {
 
   const navigation = useNavigation();
-  const [newName, setNewName] = useState('');
   const [newUser, setNewUser] = useState('');
   const [newMail, setNewMail] = useState('');
+  const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
+
 
 
   const [fontsLoaded] = useFonts({
@@ -39,12 +41,22 @@ const PasswordReset = () => {
     }
   }, [fontsLoaded]);
   
+  const [oldName, setOldName] = useState('');
+  const [oldEmail, setOldEmail] = useState('');
+  useProfileInfo(setOldName, setOldEmail); 
+
   const handleConfirm = async () => {
-    try {
-      
-    } catch (error) {}
-    Alert.alert('Perfil actualizado', 'Tu perfil ha sido actualizado correctamente.');
-    navigation.goBack(); 
+    const success = await editProfile(newUser, newMail, oldName, oldEmail);
+    if (success) {
+      setNewMail('');
+      setNewUser('');
+      setIsSuccessModalVisible(true);
+
+      setTimeout(() => {
+        setIsSuccessModalVisible(false);
+        navigation.goBack();
+      }, 1500); 
+    }
   };
 
 
@@ -64,11 +76,7 @@ const PasswordReset = () => {
 
         <View style={styles.containerEdit}>
           <Text style={styles.title}>Editar Perfil</Text>
-          <TextInput
-              style={[styles.input]}
-              placeholder="Nombre"
-              value={newName}
-              onChangeText={setNewName}/>
+          
               <TextInput
               style={[styles.input]}
               placeholder="Usuario"
@@ -83,7 +91,15 @@ const PasswordReset = () => {
                   <Text style={styles.loginButtonText}>Confirmar</Text>
                 </TouchableOpacity>
         </View>
+        <CustomAlertModal
+           isVisible={isSuccessModalVisible}
+           message="Perfil editado correctamente"
+           showCancelButton={false}
+           onCancel={() => setIsSuccessModalVisible(false)}
+         /> 
+
       </View>
+
       
     </SafeAreaView>
   );

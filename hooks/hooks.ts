@@ -829,3 +829,63 @@ export const resetPassword = async (email: string, code: string, newPassword: st
   if (!res.ok) throw new Error(data.message || 'No se pudo restablecer la contraseña');
   return data;
 };
+
+
+export const useDeleteProfile = async () => {
+  const userId = await AsyncStorage.getItem('userid');
+  const token = await AsyncStorage.getItem('token');
+
+  try {
+    const res = await fetch(`${url}/api/v1/users/${userId}`, {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+       },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      console.error('Error al eliminar el perfil:', data);
+      Alert.alert('Error', data.message || 'Error al eliminar el perfil');
+      return ;
+    }
+  }
+  catch (error) {
+    console.error('Error al eliminar el perfil:', error);
+    Alert.alert('Error', 'No se pudo eliminar el perfil. Por favor, inténtalo de nuevo más tarde.');
+    return ;
+  }
+
+  
+  
+};
+
+export const editProfile = async (user: string, email: string, oldUser: string, oldEmail: string) => {
+  try {
+    const userId = await AsyncStorage.getItem('userid');
+    const token = await AsyncStorage.getItem('token');
+
+    const alias = user === '' ? oldUser : user;
+    email = email === '' ? oldEmail : email;
+
+    const res = await fetch(`${url}/api/v1/users/${userId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ alias, email }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.log('Error al editar el perfil:', data);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.log('Error al editar el perfil:', error);
+    return false;
+  }
+};
