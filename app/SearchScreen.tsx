@@ -190,11 +190,11 @@ const SearchScreen = () => {
         sortedRecipes.sort((a, b) => Number(b.id) - Number(a.id));
         break;
       case 'Usuario':
-        if (searchQuery.trim() !== '') {
-          sortedRecipes = sortedRecipes.filter((r) =>
-            r.chef.toLowerCase().includes(searchQuery.toLowerCase())
-          );
-        }
+        // if (searchQuery.trim() !== '') {
+        //   sortedRecipes = sortedRecipes.filter((r) =>
+        //     r.chef.toLowerCase().includes(searchQuery.toLowerCase())
+        //   );
+        // }
         sortedRecipes.sort((a, b) => (a.chef || '').localeCompare(b.chef || ''));
         break;
       default:
