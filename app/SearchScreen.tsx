@@ -1,23 +1,22 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Importa useRef
 import {
   ScrollView,
   View,
   Text,
   TouchableOpacity,
   TextInput,
-  StyleSheet, 
+  StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useNavigation } from 'expo-router';
 import { useFonts, WorkSans_400Regular, WorkSans_700Bold } from '@expo-google-fonts/work-sans';
 import * as SplashScreen from 'expo-splash-screen';
 import styles from './styles/searchScreenStyles';
-import BottomNavigation from './components/navBar'; // Cambié a BottomNavigation si ese es el nombre correcto
+import BottomNavigation from './components/navBar';
 import LogoHeader from './components/logoHeader';
-import RecipeList from './components/recepieList';
+import RecipeGrid from './components/recipeGrid'; // RecipeList no se usa, solo RecipeGrid
 import { FontAwesome } from '@expo/vector-icons';
 import ModalSelector from './components/modalSelector';
-import RecipeGrid from './components/recipeGrid';
 import CustomAlertModal from './components/alert';
 import {
   searchByFilter,
@@ -25,8 +24,6 @@ import {
   fetchRecipes
 } from '../hooks/hooks';
 
-// === DEFINICIÓN DE CATEGORÍAS FIJAS ===
-// Tomadas de createRecepieScreen
 const FIXED_CATEGORIES = [
   'salado',
   'dulce',
@@ -35,23 +32,51 @@ const FIXED_CATEGORIES = [
   'postre',
 ];
 
-// Define la altura que necesita la NavBar más un pequeño margen
-  // (PaddingVertical de 10*2 + altura de icono ~40 + bottom de 20 + borde 2 + margen extra 8)
-  const NAV_BAR_SAFE_AREA_HEIGHT = 82; // Ajusta este valor si es necesario, 100px es un buen inicio.
-// ======================================
+const NAV_BAR_SAFE_AREA_HEIGHT = 82;
 
 const SearchScreen = () => {
   const navigation = useNavigation();
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
-  const [isSortModalVisible, setSortModal] = useState(false); 
+  const [isSortModalVisible, setSortModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
-  const [filter, setFilter] = useState<string | undefined>(undefined);
+  const [activeFilter, setActiveFilter] = useState<'Nombre' | 'Ingredientes' | 'Categoría' | 'Sin el ingrediente' | undefined>('Nombre'); // Estado para el filtro ACTIVO
   const [order, setOrder] = useState<string | undefined>(undefined);
   const [isErrorSearchModalVisible, setIsErrorSearchModalVisible] = useState(false);
-
-  // NUEVOS ESTADOS para el modal de categorías
   const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
+
+  // === Implementación del debounce ===
+  const searchTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const performSearch = async (query: string, currentFilter: string | undefined) => {
+    if (query.trim() === '') {
+      fetchRecipes(setRecipes); // Si la búsqueda está vacía, mostrar todas las recetas
+      return;
+    }
+
+    if (!currentFilter || currentFilter === 'Nombre') {
+      await searchRecipesByTitle(query, setRecipes);
+    } else if (currentFilter === 'Ingredientes') {
+      await hookfilter('ingrediente', query);
+    } else if (currentFilter === 'Sin el ingrediente') {
+      await hookfilter('sin-ingrediente', query);
+    } else if (currentFilter === 'Categoría') {
+      await hookfilter('categoria', query);
+    }
+  };
+
+  const handleSearchInputChange = (text: string) => {
+    setSearchQuery(text);
+
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      performSearch(text, activeFilter);
+    }, 500); // <--- No necesita 'as any' aquí
+  };
+  // ====================================
 
   const [fontsLoaded] = useFonts({
     WorkSans_400Regular,
@@ -66,67 +91,72 @@ const SearchScreen = () => {
     }
   }, [fontsLoaded]);
 
-  
-  const updateSearch = async (text: string) => {
-    setSearchQuery(text);
-    if (!filter || filter === 'Nombre') { 
-      searchRecipesByTitle(text, setRecipes);
+  // useEffect inicial para cargar todas las recetas al montar la pantalla por primera vez
+  // Y establecer el filtro por defecto a 'Nombre'
+  useEffect(() => {
+    fetchRecipes(setRecipes);
+    setActiveFilter('Nombre'); // Establece el filtro por defecto a 'Nombre'
+  }, []);
+
+  // useEffect para ejecutar la búsqueda cada vez que cambie el filtro activo (no el query de texto)
+  useEffect(() => {
+    if (activeFilter && activeFilter !== 'Nombre' && searchQuery.trim() !== '') {
+      // Si hay un filtro activo diferente de 'Nombre' y hay una búsqueda, ejecutarla
+      performSearch(searchQuery, activeFilter);
+    } else if (activeFilter === 'Nombre' && searchQuery.trim() === '') {
+        // Si el filtro es nombre y no hay texto, trae todo de nuevo
+        fetchRecipes(setRecipes);
+    } else if (activeFilter === 'Nombre' && searchQuery.trim() !== '') {
+        // Si el filtro es nombre y hay texto, buscar por título (debounce lo manejará)
+        performSearch(searchQuery, activeFilter);
     }
-    if (order) { 
-      sortRecipes(order);
-    }
-    else {
-      hookfilter(filter === 'Ingredientes' ? 'ingrediente' : 'sin-ingrediente', text);
-    }
-  };
+  }, [activeFilter]); // Dependencia del filtro activo
+
 
   const toggleFilterModal = () => setFilterModalVisible(!isFilterModalVisible);
   const toggleSortModal = () => setSortModal(!isSortModalVisible);
   const toggleCategoryModal = () => setCategoryModalVisible(!isCategoryModalVisible);
 
-  useEffect(() => {
-    fetchRecipes(setRecipes);
-  }, []);
-
-  // hookfilter ahora recibe la query como argumento
   const hookfilter = async (filterurl: string, query: string) => {
     try {
-      await searchByFilter(filterurl, query, setRecipes); 
-    }
-    catch (error) {
+      await searchByFilter(filterurl, query, setRecipes);
+    } catch (error) {
       console.error('Error al aplicar filtro:', error);
-      fetchRecipes(setRecipes);
+      setIsErrorSearchModalVisible(true); // Mostrar modal de error
+      fetchRecipes(setRecipes); // Cargar todas las recetas en caso de error
     }
   };
 
-  const filterRecepies = async (option: string) => { 
-    setOrder(option); 
+  const filterRecepies = async (option: string) => {
+    setActiveFilter(option as any); // Establece el filtro activo
+    toggleFilterModal(); // Cierra el modal de filtros
 
     if (option === 'Nombre') {
-      setFilter(undefined); 
-      updateSearch(searchQuery); 
-      toggleFilterModal(); 
+      // Si se selecciona "Nombre", la barra de búsqueda ya está configurada para eso.
+      // Simplemente dispara la búsqueda con el query actual (si hay alguno).
+      performSearch(searchQuery, 'Nombre');
     } else if (option === 'Categoría') {
-      toggleFilterModal(); 
-      toggleCategoryModal(); 
+      toggleCategoryModal(); // Abre el modal de categorías
+      // La búsqueda de categoría se manejará en handleCategorySelection
     } else if (option === 'Ingredientes') {
-      toggleFilterModal(); 
-      hookfilter('ingrediente', searchQuery); 
+      // Dispara la búsqueda por ingredientes con el query actual
+      performSearch(searchQuery, 'Ingredientes');
     } else if (option === 'Sin el ingrediente') {
-      toggleFilterModal(); 
-      hookfilter('sin-ingrediente', searchQuery); 
+      // Dispara la búsqueda por "sin ingrediente" con el query actual
+      performSearch(searchQuery, 'Sin el ingrediente');
     } else {
       console.error('Filtro desconocido:', option);
+      setIsErrorSearchModalVisible(true);
       fetchRecipes(setRecipes);
-      toggleFilterModal(); 
     }
   };
 
+
   const handleCategorySelection = (categoryName: string) => {
-    setSearchQuery(categoryName); 
-    hookfilter('categoria', categoryName); 
-    toggleCategoryModal(); 
-    setFilter('Categoría'); 
+    setSearchQuery(categoryName); // El query se convierte en el nombre de la categoría
+    hookfilter('categoria', categoryName); // Ejecuta la búsqueda por categoría
+    toggleCategoryModal(); // Cierra el modal de categorías
+    // El activeFilter ya debería ser 'Categoría' desde filterRecepies
   };
 
   const closeModalSuccess = () => {
@@ -134,10 +164,13 @@ const SearchScreen = () => {
   };
 
   const handleDoneSearch = () => {
-    setFilter(undefined);
-    setOrder(undefined);
-    setSearchQuery('');
-    fetchRecipes(setRecipes);
+    setSearchQuery(''); // Limpia la barra de búsqueda
+    setActiveFilter('Nombre'); // Restablece el filtro a 'Nombre'
+    setOrder(undefined); // Limpia el orden
+    fetchRecipes(setRecipes); // Carga todas las recetas
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current); // Limpia cualquier debounce pendiente
+    }
   }
 
   const handleRecipePress = (recipeId: string) => {
@@ -145,8 +178,7 @@ const SearchScreen = () => {
   };
 
   const sortRecipes = (option: string) => {
-    let sortedRecipes = [...recipes]; // copia segura
-  
+    let sortedRecipes = [...recipes];
     switch (option) {
       case 'De A a Z':
         sortedRecipes.sort((a, b) => a.title.localeCompare(b.title));
@@ -168,22 +200,19 @@ const SearchScreen = () => {
       default:
         break;
     }
-  
     setRecipes(sortedRecipes);
   };
-  
+
 
   if (!fontsLoaded) {
     return <View><Text>Cargando fuentes...</Text></View>;
   }
 
-
   return (
     <>
       <View style={{ flex: 1, backgroundColor: '#fff' }}>
-        {/* El ScrollView ocupa todo el espacio del View padre y desplaza su contenido */}
         <ScrollView
-          style={{ flex: 1 }} // Asegura que el ScrollView pueda expandirse y usar el espacio
+          style={{ flex: 1 }}
           contentContainerStyle={[
             styles.containerHome,
             localStyles.scrollViewContentPadding,
@@ -202,7 +231,12 @@ const SearchScreen = () => {
               <TextInput
                 placeholder="Buscar Receta"
                 value={searchQuery}
-                onChangeText={updateSearch}
+                // CAMBIO AQUI: Ahora usa handleSearchInputChange
+                onChangeText={handleSearchInputChange}
+                // Opcional: También puedes disparar la búsqueda cuando el usuario presiona "Enter"
+                onSubmitEditing={() => performSearch(searchQuery, activeFilter)}
+                // Opcional: O cuando el input pierde el foco
+                onBlur={() => performSearch(searchQuery, activeFilter)}
                 style={styles.searchBarInput}
                 placeholderTextColor="#86939e"
               />
@@ -244,7 +278,7 @@ const SearchScreen = () => {
             title="Filtrar"
             options={['Nombre', 'Ingredientes', 'Categoría', 'Sin el ingrediente']}
             onClose={toggleFilterModal}
-            highlightedOption={filter}
+            highlightedOption={activeFilter} // Usa el nuevo estado para resaltar
             onSelectOption={(option) => {
               filterRecepies(option);
             }}
@@ -274,7 +308,7 @@ const SearchScreen = () => {
 
           <CustomAlertModal
             isVisible={isErrorSearchModalVisible}
-            message="Error en la elección de filtro"
+            message="Error en la búsqueda o filtro. Por favor, intenta de nuevo." // Mensaje más genérico
             onConfirm={closeModalSuccess}
             confirmText="Aceptar"
             showCancelButton={false}
@@ -282,40 +316,34 @@ const SearchScreen = () => {
         </ScrollView>
       </View>
 
-      {/* Nuevo contenedor para la BottomNavigation y su fondo */}
       <View style={localStyles.navBarWrapper}>
-        {/* La capa blanca que ocultará el contenido */}
         <View style={localStyles.navBarBackground} />
-        {/* Tu BottomNavigation existente */}
         <BottomNavigation />
       </View>
     </>
   );
 };
 
-// Se define un nuevo StyleSheet para los estilos locales específicos de este componente.
 const localStyles = StyleSheet.create({
   scrollViewContentPadding: {
-    paddingBottom: NAV_BAR_SAFE_AREA_HEIGHT, // Sigue siendo necesario para empujar el contenido
+    paddingBottom: NAV_BAR_SAFE_AREA_HEIGHT,
   },
   navBarWrapper: {
     position: 'absolute',
-    bottom: 0, // Posiciona el contenedor en la parte inferior de la pantalla
+    bottom: 0,
     left: 0,
     right: 0,
-    height: NAV_BAR_SAFE_AREA_HEIGHT + 20, // Altura de la NavBar + el offset 'bottom: 20' + un poco más si es necesario
-    // Asegúrate de que esta altura cubra completamente la NavBar y el espacio debajo de ella.
-    // Experimenta con este valor.
-    overflow: 'hidden', // Importante para que el contenido no se escape si el fondo es más grande
+    height: NAV_BAR_SAFE_AREA_HEIGHT + 20,
+    overflow: 'hidden',
   },
   navBarBackground: {
     position: 'absolute',
-    bottom: 0, // Inicia desde el fondo del wrapper
+    bottom: 0,
     left: 0,
     right: 0,
-    height: '100%', // Se expande para cubrir todo el wrapper
-    backgroundColor: '#fff', // El color blanco que ocultará el contenido
-    zIndex: 1, // Debe estar detrás de la NavBar pero delante del contenido
+    height: '100%',
+    backgroundColor: '#fff',
+    zIndex: 1,
   },
 });
 

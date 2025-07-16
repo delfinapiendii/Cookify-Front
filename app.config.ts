@@ -5,14 +5,16 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   name: "cookify",
   slug: "Cookify",
   version: "1.0.0",
-  scheme: "cookify", // 👈 necesario para Linking
+  scheme: "cookify",
   orientation: "portrait",
-  icon: "./assets/images/icon.png",
+  // MODIFICACIÓN AQUI:
+  icon: "./assets/images/burguer.png", // <--- Asegúrate de que el nombre del archivo sea correcto (por ejemplo, burguer.png)
   userInterfaceStyle: "automatic",
   android: {
     package: "com.delfipiendi.cookify",
     adaptiveIcon: {
-      foregroundImage: "./assets/images/adaptive-icon.png",
+      // MODIFICACIÓN AQUI:
+      foregroundImage: "./assets/images/burguer.png", // <--- También usa tu imagen para el foreground del ícono adaptativo
       backgroundColor: "#ffffff",
     },
     permissions: [
@@ -23,6 +25,8 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   },
   ios: {
     supportsTablet: true,
+    // MODIFICACIÓN AQUI (Opcional, si quieres la misma imagen que la general):
+    icon: "./assets/images/burguer.png", // <--- Usa tu imagen para iOS también
   },
   extra: {
     eas: {
@@ -34,7 +38,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
     [
       "expo-splash-screen",
       {
-        image: "./assets/images/splash-icon.png",
+        image: "./assets/images/splash-icon.png", // Mantén tu splash screen actual
         imageWidth: 200,
         resizeMode: "contain",
         backgroundColor: "#ffffff",
