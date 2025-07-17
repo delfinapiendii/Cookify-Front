@@ -162,15 +162,14 @@ export const styles = StyleSheet.create({
   }, divider: {
     height: 1,
     backgroundColor: '#ccc',
-    marginBottom:30,
     marginLeft: width * 0.05,
     marginRight: width * 0.05,
   },
   recipesListContainer: {
     paddingHorizontal: 20,
-    marginTop: 20,
+    paddingTop: 30,
     width: '100%',
-    flex: 1,},
+    },
   recipeItemContainer: {
     flexDirection: 'row',
     backgroundColor: '#fff',
@@ -189,6 +188,15 @@ export const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 15,
     resizeMode: 'cover',
+  },
+  recipeImagePlaceholder: {
+    width: 80,
+    height: 80,
+    borderRadius: 8,
+    marginRight: 15,
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   recipeInfo: {
     flex: 1,
