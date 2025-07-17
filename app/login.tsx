@@ -68,6 +68,7 @@ const LoginScreen = () => {
 
     checkSavedCredentials();
   }, []);
+
   const loginWithSavedCredentials = async () => {
     const email = await SecureStore.getItemAsync('mail');
     const pass = await SecureStore.getItemAsync('password');
@@ -82,7 +83,7 @@ const LoginScreen = () => {
         await AsyncStorage.setItem('token', token);
         router.push('/home');
       } catch (error) {
-        console.error('Error al guardar token:', error);
+        console.error('Error al guardar token:', error,token);
       }
     } else {
       console.log('Error en el login con credenciales guardadas:', message || 'Error desconocido');
@@ -101,6 +102,7 @@ const LoginScreen = () => {
         const decoded = decodeJWT(token);
         await AsyncStorage.setItem('userid', decoded.id);
         await AsyncStorage.setItem('token', token);
+
         setshowSaveCredentials(true);
       } catch (error) {
         console.error('Error al guardar token:', error);

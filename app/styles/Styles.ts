@@ -38,6 +38,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontFamily: 'WorkSans_700Bold',
   },
+
+  buttonGuest: {
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 25,
+    marginTop: 10,
+    borderWidth: 1,
+    borderColor: '#fff',
+  },
+  buttonTextGuest: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    fontFamily: 'WorkSans_700Bold',
+  },
   loginText: {
     marginTop: 30,
     fontSize: 20,
@@ -185,8 +200,6 @@ centerlogo: {
   },
 
   featuredRecipesContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 20,
   },
   recipeCard: {
     height: 140,
