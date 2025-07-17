@@ -20,7 +20,7 @@ export default function Index() {
     const initialize = async () => {
       await AsyncStorage.clear();
       const loadRecipes = async () => {
-        await fetchRecipes(); // 🔥 LLAMÁ al fetch
+        await fetchRecipes(); 
       };
       loadRecipes();
     };

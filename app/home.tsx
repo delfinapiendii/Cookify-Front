@@ -8,6 +8,7 @@ import BottomNavigation from './components/navBar';
 import LogoHeader from './components/logoHeader'; 
 import categoriesData from '../assets/data/categories.json';
 import CustomAlertModal from './components/alert'; 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
   const [isCategoryNonExistVisible, setIsCategoryNonExistVisible] = useState(false);
@@ -16,6 +17,8 @@ const Home = () => {
 
   useEffect(() => {
     fetchRecipes();
+    
+
   }, []);
 
   const handleRecipePress = (recipeId: string) => {
@@ -33,6 +36,8 @@ const Home = () => {
       },
     });
   };
+
+  
 
   const closeModalSuccess = () => {
     setIsCategoryNonExistVisible(false);

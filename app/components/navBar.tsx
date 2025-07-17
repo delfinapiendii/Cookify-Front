@@ -11,58 +11,58 @@ const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [isGuest, setIsGuest] = useState(false);
+
   const checkUserIdBeforeAction = async () => {
     const userId = await AsyncStorage.getItem('userid');
-    if (!userId) {
+
+    if (!userId || userId === 'null') {
+      console.log('User ID found:', userId);
       setIsGuest(true);
       return ;
     }
     setIsGuest(false);
+    console.log('User ID found:', userId);
     return ;
   };
   
 
-  const handleNavigationPress = (screen: string) => {
-    checkUserIdBeforeAction();
+  const handleNavigationPress = async (screen: string) => {
+    const userId = await AsyncStorage.getItem('userid');
+    const isGuest = !userId || userId === 'null';
+  
     if (screen === 'Search') {
-      if (!isGuest) {
+      if (isGuest) {
         setShowLoginModal(true);
         return;
-      }
-      else{
+      } else {
         router.push('/SearchScreen');
       }
     } else if (screen === 'AddRecipe') {
-      if (!isGuest) {
+      if (isGuest) {
         setShowLoginModal(true);
         return;
-      }
-      else{
+      } else {
         router.push('/createRecepieScreen');
       }
     } else if (screen === 'Home') {
       router.push('/home');
     } else if (screen === 'Bookmarks') {
-      if (!isGuest) {
+      if (isGuest) {
         setShowLoginModal(true);
         return;
-      }
-      else {
+      } else {
         router.push('/profileRecipes');
       }
-
     } else if (screen === 'Profile') {
-      if (!isGuest) {
+      if (isGuest) {
         setShowLoginModal(true);
         return;
-      }
-      else  {
+      } else {
         router.push('/profile');
       }
-
     }
   };
-
+  
   const getIconColor = (screen: string) => {
     if (
       (screen === 'Home' && pathname === '/home') ||
