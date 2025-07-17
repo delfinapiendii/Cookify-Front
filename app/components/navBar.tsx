@@ -1,24 +1,64 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/navBarStyle'; 
 import { router, usePathname } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import CustomAlertModal from './alert';
+
 
 const BottomNavigation: React.FC = () => {
   const pathname = usePathname();
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const [isGuest, setIsGuest] = useState(false);
+  const checkUserIdBeforeAction = async () => {
+    const userId = await AsyncStorage.getItem('userid');
+    if (!userId) {
+      setIsGuest(true);
+      return ;
+    }
+    setIsGuest(false);
+    return ;
+  };
+  
 
   const handleNavigationPress = (screen: string) => {
+    checkUserIdBeforeAction();
     if (screen === 'Search') {
-      router.push('/SearchScreen');
+      if (!isGuest) {
+        setShowLoginModal(true);
+        return;
+      }
+      else{
+        router.push('/SearchScreen');
+      }
     } else if (screen === 'AddRecipe') {
-      router.push('/createRecepieScreen');
+      if (!isGuest) {
+        setShowLoginModal(true);
+        return;
+      }
+      else{
+        router.push('/createRecepieScreen');
+      }
     } else if (screen === 'Home') {
       router.push('/home');
     } else if (screen === 'Bookmarks') {
-      router.push('/profileRecipes');
+      if (!isGuest) {
+        setShowLoginModal(true);
+        return;
+      }
+      else {
+        router.push('/profileRecipes');
+      }
 
     } else if (screen === 'Profile') {
-      router.push('/profile');
+      if (!isGuest) {
+        setShowLoginModal(true);
+        return;
+      }
+      else  {
+        router.push('/profile');
+      }
 
     }
   };
@@ -36,8 +76,12 @@ const BottomNavigation: React.FC = () => {
     return '#333'; // inactivo
   };
 
+  function setIsDeleteModalVisible(arg0: boolean) {
+    throw new Error('Function not implemented.');
+  }
+
   return (
-    <View style={styles.bottomNavigation}>
+    <><View style={styles.bottomNavigation}>
       <TouchableOpacity style={styles.navItem} onPress={() => handleNavigationPress('Home')}>
         <Ionicons name="home-outline" size={24} color={getIconColor('Home')} />
       </TouchableOpacity>
@@ -56,6 +100,20 @@ const BottomNavigation: React.FC = () => {
         <Ionicons name="person-outline" size={24} color={getIconColor('Profile')} />
       </TouchableOpacity>
     </View>
+    <CustomAlertModal
+        isVisible={showLoginModal}
+        message="Para acceder a esta sección, debes iniciar sesión o registrarte."
+        onConfirm={() => {
+          setShowLoginModal(false);
+          router.push('/');
+        } }
+        onCancel={() => {
+          setShowLoginModal(false);
+        } }
+
+        confirmText="Iniciar"
+        cancelText='Volver'
+        showCancelButton={false} /></>
   );
 };
 
