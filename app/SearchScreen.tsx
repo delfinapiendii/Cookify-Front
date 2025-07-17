@@ -21,7 +21,8 @@ import CustomAlertModal from './components/alert';
 import {
   searchByFilter,
   searchRecipesByTitle,
-  fetchRecipes
+  fetchRecipes,
+  searchByAlias,
 } from '../hooks/hooks';
 
 const FIXED_CATEGORIES = [
@@ -39,8 +40,9 @@ const SearchScreen = () => {
   const [isFilterModalVisible, setFilterModalVisible] = useState(false);
   const [isSortModalVisible, setSortModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [aliasQuery, setAliasQuery] = useState('');
   const [recipes, setRecipes] = useState([]);
-  const [activeFilter, setActiveFilter] = useState<'Nombre' | 'Ingredientes' | 'Categoría' | 'Sin el ingrediente' | undefined>('Nombre'); // Estado para el filtro ACTIVO
+  const [activeFilter, setActiveFilter] = useState<'Nombre' | 'Ingredientes' | 'Categoría' | 'Sin el ingrediente' | 'Usuario' | undefined>('Nombre'); // Estado para el filtro ACTIVO
   const [order, setOrder] = useState<string | undefined>(undefined);
   const [isErrorSearchModalVisible, setIsErrorSearchModalVisible] = useState(false);
   const [isCategoryModalVisible, setCategoryModalVisible] = useState(false);
@@ -62,8 +64,10 @@ const SearchScreen = () => {
       await hookfilter('sin-ingrediente', query);
     } else if (currentFilter === 'Categoría') {
       await hookfilter('categoria', query);
+    } else if (currentFilter === 'Usuario') { 
+      await searchByAlias(query, setRecipes);
     }
-  };
+  }
 
   const handleSearchInputChange = (text: string) => {
     setSearchQuery(text);
@@ -128,28 +132,32 @@ const SearchScreen = () => {
   };
 
   const filterRecepies = async (option: string) => {
-    setActiveFilter(option as any); // Establece el filtro activo
-    toggleFilterModal(); // Cierra el modal de filtros
+  setActiveFilter(option as any);
+  toggleFilterModal();
+  setSearchQuery(''); // Limpia el query general al cambiar de filtro
+  setAliasQuery(''); // Limpia el alias al cambiar de filtro
 
-    if (option === 'Nombre') {
-      // Si se selecciona "Nombre", la barra de búsqueda ya está configurada para eso.
-      // Simplemente dispara la búsqueda con el query actual (si hay alguno).
-      performSearch(searchQuery, 'Nombre');
-    } else if (option === 'Categoría') {
-      toggleCategoryModal(); // Abre el modal de categorías
-      // La búsqueda de categoría se manejará en handleCategorySelection
-    } else if (option === 'Ingredientes') {
-      // Dispara la búsqueda por ingredientes con el query actual
-      performSearch(searchQuery, 'Ingredientes');
-    } else if (option === 'Sin el ingrediente') {
-      // Dispara la búsqueda por "sin ingrediente" con el query actual
-      performSearch(searchQuery, 'Sin el ingrediente');
+  if (option === 'Nombre') {
+    // La búsqueda de nombre se maneja con el debounce
+    if (searchQuery.trim() !== '') {
+        performSearch(searchQuery, 'Nombre');
     } else {
-      console.error('Filtro desconocido:', option);
-      setIsErrorSearchModalVisible(true);
-      fetchRecipes(setRecipes);
+        fetchRecipes(setRecipes);
     }
-  };
+  } else if (option === 'Categoría') {
+    toggleCategoryModal();
+  } else if (option === 'Ingredientes') {
+    // No dispares la búsqueda aquí, deja que el debounce la maneje
+  } else if (option === 'Sin el ingrediente') {
+    // No dispares la búsqueda aquí
+  } else if (option === 'Usuario') { // ✅ Nuevo caso para 'Usuario'
+    // La búsqueda se disparará cuando el usuario ingrese texto
+  } else {
+    console.error('Filtro desconocido:', option);
+    setIsErrorSearchModalVisible(true);
+    fetchRecipes(setRecipes);
+  }
+};
 
 
   const handleCategorySelection = (categoryName: string) => {
@@ -276,7 +284,7 @@ const SearchScreen = () => {
           <ModalSelector
             visible={isFilterModalVisible}
             title="Filtrar"
-            options={['Nombre', 'Ingredientes', 'Categoría', 'Sin el ingrediente']}
+            options={['Nombre', 'Ingredientes', 'Categoría', 'Sin el ingrediente', 'Usuario']}
             onClose={toggleFilterModal}
             highlightedOption={activeFilter} // Usa el nuevo estado para resaltar
             onSelectOption={(option) => {

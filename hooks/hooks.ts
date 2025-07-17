@@ -639,6 +639,37 @@ export const searchByFilter = async (filterurl: string, searchQuery: string, set
   }
 };
 
+export const searchByAlias = async (aliasQuery: string, setRecipes: Function) => {
+  try {
+    const response = await fetch(`${url}/api/v1/recetas/usuario-alias/${aliasQuery}`, {
+      method: 'GET',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      const formatted = data.map((r: any) => ({
+        id: r.id,
+        title: r.titulo,
+        image: r.imagenes?.[0],
+        rating: r.valoracionPromedio || 0,
+        chef: r.usuario?.alias || 'Desconocido',
+      }));
+      setRecipes(formatted);
+    } else {
+      // Si la respuesta no es OK, limpiamos las recetas para mostrar '0 recetas encontradas'
+      setRecipes([]);
+      console.error('Error en búsqueda por alias:', data.message || response.statusText);
+    }
+  } catch (error) {
+    console.error('Error al obtener recetas por alias:', error);
+    // En caso de un error de red, también limpiamos las recetas
+    setRecipes([]);
+  }
+};
+
+
 export const fetchRecipes = async (setRecipes: Function) => {
   try {
     const response = await fetch(`${url}/api/v1/recetas`, {
