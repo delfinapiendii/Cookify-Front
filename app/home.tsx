@@ -12,35 +12,63 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Home = () => {
   const [isCategoryNonExistVisible, setIsCategoryNonExistVisible] = useState(false);
+  const [showLoginModal, setShowLoginModal] = useState(false); // ✅ Nueva variable de estado para el modal de inicio de sesión
+  const [isGuest, setIsGuest] = useState(true); // ✅ Nueva variable de estado para el modo invitado
   const { recipes, fetchRecipes } = useRecipes();
-  const { handleCategoryPress } = useCategoryNavigation(setIsCategoryNonExistVisible);
+   const { handleCategoryPress } = useCategoryNavigation(setIsCategoryNonExistVisible, setShowLoginModal);
 
   useEffect(() => {
+    const checkUserStatus = async () => {
+      const userId = await AsyncStorage.getItem('userid');
+      if (userId && userId !== 'null') {
+        setIsGuest(false);
+      }
+    };
+    checkUserStatus();
     fetchRecipes();
     
 
   }, []);
 
+  // ✅ Lógica modificada para el onPress de la receta
   const handleRecipePress = (recipeId: string) => {
-    router.push(`/recipe?id=${recipeId}`);
+    if (isGuest) {
+      setShowLoginModal(true); // Muestra el modal si es invitado
+    } else {
+      router.push(`/recipe?id=${recipeId}`); // Navega si el usuario está logueado
+    }
   };
 
+  // ✅ Lógica modificada para el botón de "Ver más"
   const handleVerMas = () => {
-    fetchRecipes();
-    const recipesString = encodeURIComponent(JSON.stringify(recipes));
-    router.push({
-      pathname: '/viewMore',
-      params: {
-        recipes: recipesString,
-        title: '¡Recetas que pueden gustarte!',
-      },
-    });
+    if (isGuest) {
+      setShowLoginModal(true); // Muestra el modal si es invitado
+    } else {
+      fetchRecipes();
+      const recipesString = encodeURIComponent(JSON.stringify(recipes));
+      router.push({
+        pathname: '/viewMore',
+        params: {
+          recipes: recipesString,
+          title: '¡Recetas que pueden gustarte!',
+        },
+      });
+    }
   };
-
-  
 
   const closeModalSuccess = () => {
     setIsCategoryNonExistVisible(false);
+  };
+
+  // ✅ Función para cerrar el modal y redirigir
+  const handleLoginConfirm = () => {
+    setShowLoginModal(false);
+    router.push('/'); // Redirige a la pantalla de inicio de sesión
+  };
+
+  // ✅ Función para cerrar el modal sin redirigir
+  const handleLoginCancel = () => {
+    setShowLoginModal(false);
   };
 
   return (
@@ -111,6 +139,18 @@ const Home = () => {
         confirmText="Aceptar"
         showCancelButton={false}
       />
+
+      {/* ✅ Nuevo modal de alerta para el modo invitado */}
+      <CustomAlertModal
+        isVisible={showLoginModal}
+        message="Para acceder a esta sección, debes iniciar sesión o registrarte."
+        onConfirm={handleLoginConfirm}
+        onCancel={handleLoginCancel}
+        confirmText="Iniciar"
+        cancelText='Volver'
+        showCancelButton={true} // Se habilita el botón de cancelar
+      />
+
     </>
   );
 };

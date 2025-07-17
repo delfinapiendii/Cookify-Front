@@ -113,7 +113,7 @@ const BottomNavigation: React.FC = () => {
 
         confirmText="Iniciar"
         cancelText='Volver'
-        showCancelButton={false} /></>
+        showCancelButton={true} /></>
   );
 };
 

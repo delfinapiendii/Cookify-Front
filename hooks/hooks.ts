@@ -265,8 +265,16 @@ export const useRecipes = () => {
   return { recipes, setRecipes, fetchRecipes };
 };
 
-export const useCategoryNavigation = (setModalVisible: (visible: boolean) => void) => {
+export const useCategoryNavigation = (setModalVisible: (visible: boolean) => void , setShowLoginModal: (visible: boolean) => void) => {
   const handleCategoryPress = async (categoryId: string) => {
+    // ✅ Añadimos la verificación de usuario aquí
+    const userId = await AsyncStorage.getItem('userid');
+    const isGuest = !userId || userId === 'null';
+
+    if (isGuest) {
+      setShowLoginModal(true); // Muestra el modal de inicio de sesión
+      return; // Detiene la ejecución de la función
+    }
     try {
       const response = await fetch(`${url}/api/v1/recetas/categoria/${categoryId}`, {
         method: 'GET',
