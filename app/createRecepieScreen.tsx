@@ -299,6 +299,44 @@ const checkforDuplicateRecipe = (name: string) => {
   return false;
 };
 
+// ✅ Nueva función para guardar la receta localmente
+  const saveRecipeLocally = async () => {
+    try {
+      // Obtiene las recetas pendientes existentes
+      const jsonValue = await AsyncStorage.getItem('pendingRecipes');
+      const existingRecipes = jsonValue != null ? JSON.parse(jsonValue) : [];
+      
+      // Crea la nueva receta con todos los datos del estado
+      const newPendingRecipe = {
+        id: Date.now(), // Usar un ID único temporal
+        title: recipeName,
+        description: description,
+        recipeType: recipeType,
+        servings: servings,
+        ingredients: ingredients,
+        steps: steps,
+        media: media,
+      };
+
+      // Añade la nueva receta al array y la guarda
+      const updatedRecipes = [...existingRecipes, newPendingRecipe];
+      await AsyncStorage.setItem('pendingRecipes', JSON.stringify(updatedRecipes));
+      Alert.alert('Receta Guardada', 'La receta se ha guardado localmente. La puedes publicar más tarde desde la sección de recetas pendientes.');
+
+    } catch (e) {
+      console.error('Error al guardar la receta en el dispositivo:', e);
+      Alert.alert('Error', 'No se pudo guardar la receta localmente.');
+    }
+  };
+
+  // ✅ Nueva función para manejar el 'No Publicar' del modal
+  const handleCancelMobileUpload = () => {
+    console.log('Usuario canceló la publicación por datos móviles.');
+    setisCelularModalVisible(false);
+    // ✅ Llama a la función para guardar la receta localmente
+    saveRecipeLocally();
+  };
+
   const handlePublishRecipe = async () => {
     let isValid = true;
 
@@ -373,13 +411,20 @@ const checkforDuplicateRecipe = (name: string) => {
       setisCelularModalVisible(true);
       return;
     } 
-    else if (networkState.type === 'WIFI') {
+    // ✅ Maneja el caso de conexión a WiFi y la publicación inmediata
+    else if (networkState.type === Network.NetworkStateType.WIFI) {
       try {
         await hookPublishRecipe();
       } catch (error) {
+        console.error('Error al publicar por WiFi:', error);
       }
-    }  
-  };
+    }
+    // ✅ Añade el caso de otras conexiones que no son WiFi o celular (por ej. Ethernet)
+    else if (networkState.type === Network.NetworkStateType.UNKNOWN) {
+      setisCelularModalVisible(true);
+      return;
+    }
+  }
   const confirmCelularUpload = async () => {
     try {
       await hookPublishRecipe();    
@@ -669,13 +714,11 @@ const checkforDuplicateRecipe = (name: string) => {
           <CustomAlertModal
             isVisible={isCelularModalVisible}
             message="Estás usando datos móviles. ¿Quieres continuar con la publicación?"
-            onConfirm={() => {
-                closeModalSuccess();
-                confirmCelularUpload();
-                router.push('/pendingProfile');
-            }}
+            onConfirm={confirmCelularUpload} // ✅ Se remueven las acciones redundantes
+            onCancel={handleCancelMobileUpload} // ✅ Nueva función para manejar el cancelar
             confirmText="Publicar"
-            showCancelButton={false}
+            cancelText="No Publicar" // ✅ Se agrega el texto para el botón de cancelar
+            showCancelButton={true} // ✅ Se habilita el botón de cancelar
           />
 
           <CustomAlertModal
