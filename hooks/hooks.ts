@@ -707,7 +707,7 @@ export const publishRecipe = async (
   recipeType: string,
   servings: string,
   ingredients: { name: string; quantity: string }[],
-  steps: { description: string; imageUrl: string | null }[],
+  steps: { description: string; mediaUrl: string | null; mediaType: 'image' | 'video' | null }[],
   imageUrls: string[], // 🔄 cambio aquí
   onSuccess: () => void,
   onError: (message: string) => void
@@ -740,7 +740,7 @@ export const publishRecipe = async (
         pasos: steps.map((step, index) => ({
           orden: index + 1,
           descripcion: step.description,
-          ...(step.imageUrl ? { imagenUrl: step.imageUrl } : {}),
+          ...(step.mediaUrl ? { imagenUrl: step.mediaUrl } : {}),
         })),
         imagenes: imageUrls, // 🔄 cambio aquí
       }),

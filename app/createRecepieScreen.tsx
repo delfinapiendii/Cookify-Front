@@ -26,6 +26,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
 import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes, loadPendingRecipes } from '../hooks/hooks';
 import * as Network from 'expo-network';
+import { Video, ResizeMode } from 'expo-av';
 
 
 const { width } = Dimensions.get('window');
@@ -54,7 +55,7 @@ const CreateRecipeScreen = () => {
   const [ingredientNameErrors, setIngredientNameErrors] = useState<boolean[]>([]);
   const [ingredientQuantityErrors, setIngredientQuantityErrors] = useState<boolean[]>([]);
 
-  const [steps, setSteps] = useState([{ description: '', imageUri: null as string | null, imageUrl: null as string | null }]);
+  const [steps, setSteps] = useState<Array<{ description: string; mediaUri: string | null; mediaUrl: string | null; mediaType: 'image' | 'video' | null }>>([{ description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
   const [stepDescriptionErrors, setStepDescriptionErrors] = useState<boolean[]>([]);
 
   const [showPicker, setShowPicker] = useState(false);
@@ -66,10 +67,10 @@ const CreateRecipeScreen = () => {
 
 
 
-  const [images, setImages] = useState<any[]>([]);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [imageError, setImageError] = useState(false); 
-  const carouselData = [...imageUrls, 'ADD_BUTTON'];
+  const [media, setMedia] = useState<Array<{ url: string, type: 'image' | 'video' }>>([]);
+  const [imageError, setImageError] = useState(false);
+
+  const carouselData = [...media, 'ADD_BUTTON']; 
 
 
   const { recipes } = useCreatedRecipes();
@@ -131,7 +132,7 @@ const CreateRecipeScreen = () => {
   };
 
   const handleAddStep = () => {
-    setSteps([...steps, { description: '', imageUri: null, imageUrl: null }]);
+    setSteps([...steps, { description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
   };
 
   const handleStepChange = (index: number, value: string) => {
@@ -157,10 +158,8 @@ const CreateRecipeScreen = () => {
     setRecipeType('');
     setServings('');
     setIngredients([{ name: '', quantity: '' }]);
-    setSteps([{ description: '', imageUri: null, imageUrl: null }]);
-    setImages([]);
-    setImageUrls([]); 
-
+    setSteps([{ description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
+    setMedia([]);
     setNameError(false);
     setDescError(false);
     setTypeError(false);
@@ -203,7 +202,7 @@ const pickImage = async () => {
   }
 
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    mediaTypes: ImagePicker.MediaTypeOptions.All,
     allowsMultipleSelection: false,
     allowsEditing: true,
     aspect: [4, 3],
@@ -215,16 +214,16 @@ const pickImage = async () => {
 
     try {
       const uploadedUrl = await uploadImage(selected.uri);
-      console.log("Imagen subida con éxito:", uploadedUrl);
+      console.log("Archivo subido con éxito:", uploadedUrl);
       if (uploadedUrl) {
-        setImageUrls(prev => [...prev, uploadedUrl]); 
+        setMedia(prev => [...prev, { url: uploadedUrl, type: selected.type as 'image' | 'video' }]);
         setImageError(false); 
       } else {
-        Alert.alert("Error", "No se pudo subir la imagen.");
+        Alert.alert("Error", "No se pudo subir el archivo.");
       }
     } catch (error) {
-      console.error("Error al subir la imagen:", error);
-      Alert.alert("Error", "Fallo en la carga de imagen.");
+      console.error("Error al subir el archivo:", error);
+      Alert.alert("Error", "Fallo en la carga del archivo.");
     }
   }
 };
@@ -252,7 +251,7 @@ const hookPublishRecipe = async () => {
       servings,
       ingredients,
       steps,
-      imageUrls,
+      media.map(item => item.url),
       () => handleConfirm(),
       (msg) => {
         if (msg && msg.includes('Ya existe una receta')) {
@@ -304,7 +303,7 @@ const checkforDuplicateRecipe = (name: string) => {
     let isValid = true;
 
     
-    if (!images && !imageUrls) { 
+    if (media.length === 0) {
       setImageError(true);
       isValid = false;
     } else {
@@ -397,34 +396,37 @@ const checkforDuplicateRecipe = (name: string) => {
     }
 
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
       aspect: [4, 3],
       quality: 1,
     });
 
     if (!result.canceled) {
-      const imageSelected = result.assets[0];
+      const selected = result.assets[0];
 
       const newSteps = [...steps];
-      newSteps[stepIndex].imageUri = imageSelected.uri;
+      newSteps[stepIndex].mediaUri = selected.uri;
+      newSteps[stepIndex].mediaType = selected.type as 'image' | 'video';
       setSteps(newSteps);
 
       try {
-        const uploadedUrl = await uploadImage(imageSelected.uri);
+        const uploadedUrl = await uploadImage(selected.uri);
         if (uploadedUrl) {
           const updatedStepsWithUrl = [...newSteps];
-          updatedStepsWithUrl[stepIndex].imageUrl = uploadedUrl;
+          updatedStepsWithUrl[stepIndex].mediaUrl = uploadedUrl;
           setSteps(updatedStepsWithUrl);
         } else {
-          Alert.alert("Error", "No se pudo subir la imagen del paso.");
-          newSteps[stepIndex].imageUri = null;
+          Alert.alert("Error", "No se pudo subir el archivo del paso.");
+          newSteps[stepIndex].mediaUri = null;
+          newSteps[stepIndex].mediaType = null;
           setSteps(newSteps);
         }
       } catch (uploadError) {
-        console.error("Error al subir la imagen del paso:", uploadError);
-        Alert.alert("Error", "Fallo en la carga de la imagen del paso.");
-        newSteps[stepIndex].imageUri = null;
+        console.error("Error al subir el archivo del paso:", uploadError);
+        Alert.alert("Error", "Fallo en la carga del archivo del paso.");
+        newSteps[stepIndex].mediaUri = null;
+        newSteps[stepIndex].mediaType = null;
         setSteps(newSteps);
       }
     }
@@ -444,7 +446,7 @@ const checkforDuplicateRecipe = (name: string) => {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         data={carouselData}
-        keyExtractor={(item, index) => item + index.toString()}
+        keyExtractor={(item, index) => typeof item === 'string' ? item : item.url + index.toString()}
         renderItem={({ item }) => {
           if (item === 'ADD_BUTTON') {
             return (
@@ -459,14 +461,27 @@ const checkforDuplicateRecipe = (name: string) => {
               </TouchableOpacity>
             );
           } else {
-            return (
-              <Image
-                source={{ uri: item }}
-                style={styles.selectedImageCarrusel}
-              />
+            const mediaItem = item as { url: string, type: string };
+
+            if (mediaItem.type.startsWith('video')) {
+                return (
+                  <Video
+                    source={{ uri: mediaItem.url }}
+                    style={styles.selectedImageCarrusel}
+                    useNativeControls
+                    resizeMode={ResizeMode.CONTAIN}
+                  />
+                );
+              } else { // Asumimos que es una imagen
+                return (
+                  <Image
+                    source={{ uri: mediaItem.url }}
+                    style={styles.selectedImageCarrusel}
+                  />
             );
           }
-        }}
+        }
+      }}
         contentContainerStyle={{ paddingHorizontal: ITEM_MARGIN_HORIZONTAL }} 
       />
       {/* Nueva vista para la flecha de navegación, visible solo si hay más de 1 imagen (+ el botón) */}
@@ -579,17 +594,26 @@ const checkforDuplicateRecipe = (name: string) => {
                   style={styles.stepImagePicker}
                   onPress={() => pickImageForStep(index)}
                 >
-                  {step.imageUrl ? (
-                    <Image source={{ uri: step.imageUrl }} style={styles.stepSelectedImage} />
-                  ) : step.imageUri ? (
-                    <Image source={{ uri: step.imageUri }} style={styles.stepSelectedImage} />
+                  {step.mediaType === 'video' ? (
+                      <Video
+                          source={{ uri: step.mediaUrl || step.mediaUri || '' }}
+                          style={styles.stepSelectedImage}
+                          useNativeControls
+                          resizeMode={ResizeMode.CONTAIN}
+                          isLooping
+                      />
+                  ) : step.mediaType === 'image' ? (
+                      <Image
+                          source={{ uri: step.mediaUrl || step.mediaUri || '' }}
+                          style={styles.stepSelectedImage}
+                      />
                   ) : (
-                    <View style={styles.stepCameraIconContainer}>
-                      <Ionicons name="camera" size={24} color="#888" />
-                      <Ionicons name="add-circle" size={12} color="#555" style={styles.stepAddIcon} />
-                    </View>
+                      <View style={styles.stepCameraIconContainer}>
+                          <Ionicons name="camera" size={24} color="#888" />
+                          <Ionicons name="add-circle" size={12} color="#555" style={styles.stepAddIcon} />
+                      </View>
                   )}
-                </TouchableOpacity>
+              </TouchableOpacity>
 
                 {steps.length > 1 && (
                   <TouchableOpacity onPress={() => handleRemoveStep(index)}>

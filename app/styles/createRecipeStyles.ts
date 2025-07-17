@@ -341,6 +341,12 @@ const styles = StyleSheet.create({
     resizeMode: 'cover', // Asegura que la imagen cubra el área
     borderRadius: 8,
   },
+  // ----- ESTILO PARA VIDEOS DE PASOS (NUEVO) -----
+  stepSelectedVideo: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
   inputError: {
     borderColor: 'red',
     borderWidth: 1,
@@ -376,6 +382,14 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     resizeMode: 'cover',
     marginHorizontal: ITEM_MARGIN_HORIZONTAL, // Margen a los lados de cada imagen
+  },
+
+  // ----- ESTILO PARA VIDEOS DEL CARRUSEL (NUEVO) -----
+  selectedVideoCarrusel: {
+    width: width-80, 
+    height: '100%',
+    borderRadius: 10,
+    marginHorizontal: ITEM_MARGIN_HORIZONTAL,
   },
 
   imagePickerCarrousel: {
