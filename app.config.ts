@@ -8,13 +8,13 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   scheme: "cookify",
   orientation: "portrait",
   // MODIFICACIÓN AQUI:
-  icon: "./assets/images/burguer.png", // <--- Asegúrate de que el nombre del archivo sea correcto (por ejemplo, burguer.png)
+  icon: "./assets/images/Groovy.png", // <--- Asegúrate de que el nombre del archivo sea correcto (por ejemplo, burguer.png)
   userInterfaceStyle: "automatic",
   android: {
     package: "com.delfipiendi.cookify",
     adaptiveIcon: {
       // MODIFICACIÓN AQUI:
-      foregroundImage: "./assets/images/burguer.png", // <--- También usa tu imagen para el foreground del ícono adaptativo
+      foregroundImage: "./assets/images/Groovy.png", // <--- También usa tu imagen para el foreground del ícono adaptativo
       backgroundColor: "#ffffff",
     },
     permissions: [
@@ -26,7 +26,7 @@ export default ({ config }: ConfigContext): ExpoConfig => ({
   ios: {
     supportsTablet: true,
     // MODIFICACIÓN AQUI (Opcional, si quieres la misma imagen que la general):
-    icon: "./assets/images/burguer.png", // <--- Usa tu imagen para iOS también
+    icon: "./assets/images/Groovy.png", // <--- Usa tu imagen para iOS también
   },
   extra: {
     eas: {

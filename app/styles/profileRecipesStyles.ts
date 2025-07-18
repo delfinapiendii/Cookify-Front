@@ -9,9 +9,9 @@ const profileRecipesStyles = StyleSheet.create({
   },
   recipeCard: {
     height: 140,
-    marginRight: 10,
     borderRadius: 10,
     overflow: 'hidden',
+    alignItems: 'center',
   },
   featuredRecipesContainer: {
     paddingHorizontal: 20,
@@ -26,6 +26,7 @@ const profileRecipesStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+    paddingBottom: 60,
   },
   recipeTitle: {
     padding: 8,
@@ -34,7 +35,6 @@ const profileRecipesStyles = StyleSheet.create({
     fontWeight: '500',
   },
   scrollViewContent: {
-    padding: 20,
     paddingTop: 60,
     alignItems: 'center',
     paddingBottom: 90,
@@ -97,16 +97,20 @@ const profileRecipesStyles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 22,
+    marginLeft: 20,
+    marginTop: 5,
+
     fontWeight: 'bold',
     fontFamily: 'WorkSans_700Bold',
     color: '#333',
   },
   viewMoreText: {
     fontSize: 16,
+    marginRight: 20,
     fontFamily: 'WorkSans_400Regular',
     color: '#FF9A16',
   },
-  noRecipesText: {
+  noRecipesText1: {
     fontSize: 16,
     fontFamily: 'WorkSans_400Regular',
     color: '#888',
@@ -149,6 +153,29 @@ const profileRecipesStyles = StyleSheet.create({
     backgroundColor: '#000000',
     width: '100%',
     marginVertical: 15,
+  },
+  
+  
+  editButton: {
+    position: 'absolute',
+    top: 10, // Ajusta la posición superior según la imagen de referencia
+    right: 10, // Ajusta la posición derecha según la imagen de referencia
+    backgroundColor: 'rgba(255,154,22,0.8)', // Un color que resalte, similar al de la imagen
+    borderRadius: 20, // Para hacerlo circular o con bordes redondeados
+    padding: 5, // Espacio interno
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingIndicator: {
+    alignSelf: 'center',
+    marginVertical: 20,
+  },
+  noRecipesText: {
+    fontFamily: 'WorkSans_400Regular',
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginTop: 20,
   },
 });
 

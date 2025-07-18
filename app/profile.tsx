@@ -11,11 +11,10 @@ import { useProfileInfo , useDeleteProfile} from '../hooks/hooks';
 
 
 
-// Asumiendo que tendrás un archivo de estilos para el perfil
-import { styles } from './styles/profileStyles'; // Crea este archivo
+import { styles } from './styles/profileStyles'; 
 
 export default function ProfileScreen() {
-  const [userName, setUserName] = useState(''); // Esto vendría de un estado global de usuario o props
+  const [userName, setUserName] = useState(''); 
   const [userEmail, setUserEmail] = useState(''); 
   const [isEliminateAccountVisible, setisEliminateAccountVisible] = useState(false);
   
@@ -39,20 +38,18 @@ export default function ProfileScreen() {
   }, []);
 
   if (!fontsLoaded) {
-    return null; // O un componente de carga mientras las fuentes se cargan
+    return null; 
   }
 
-  // Funciones para manejar la navegación o acciones
   const handleChangePassword = () => {
-    // Implementar la navegación a la pantalla de cambiar contraseña
-    console.log('Cambiar contraseña');
-    router.push('/passwordReset'); // Asegúrate de que esta ruta exista
+    router.push('/passwordReset');
   };
 
   const handlePendingRecipes = () => {
-    // Implementar la navegación a recetas pendientes de aprobación
-    console.log('Recetas pendientes de aprobación');
-    router.push('/pendingProfile'); // Asegúrate de que esta ruta exista
+    router.push('/pendingProfile'); 
+  };
+  const handleLogOut = () => {
+    router.push('/'); 
   };
 
   const handleDeleteAccount = () => {
@@ -61,12 +58,10 @@ export default function ProfileScreen() {
   };
 
   const handleEditProfile = () => {
-    // Implementar la navegación o modal para editar el perfil
     console.log('Editar perfil');
-    router.push('/editProfile'); // Asegúrate de que esta ruta exista
+    router.push('/editProfile'); 
   };
 
-  // Función para la navegación de la barra inferior
   const handleBottomNavPress = (screenName: string) => {
     console.log(`Navegar a: ${screenName}`);
   };
@@ -75,7 +70,7 @@ export default function ProfileScreen() {
     setisEliminateAccountVisible(false);
     useDeleteProfile();
     console.log('Cuenta eliminada');
-    router.push('/'); // Redirigir a la pantalla de inicio o donde sea necesario
+    router.push('/'); 
   };
 
   return (
@@ -108,6 +103,11 @@ export default function ProfileScreen() {
             <Text style={styles.optionText}>Recetas pendientes de aprobación</Text>
           </TouchableOpacity>
 
+          <TouchableOpacity style={styles.optionItem} onPress={handleLogOut}>
+            <Ionicons name="log-out-outline" size={24} color="#000" />
+            <Text style={styles.optionText}>Cerrar sesión</Text>
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.optionItem} onPress={handleDeleteAccount}>
             <Ionicons name="trash-outline" size={24} color="#B00020" />
             <Text style={[styles.optionText, { color: '#B00020' }]}>Eliminar cuenta</Text>
@@ -123,7 +123,6 @@ export default function ProfileScreen() {
            onCancel={() => setisEliminateAccountVisible(false)}
          />
 
-      {/* Barra de Navegación Inferior */}
     </ScrollView>
     <NavBar/>
     </View>

@@ -85,6 +85,16 @@ const ProfileRecipesScreen =  () => {
     });
   };
 
+  const handleEditRecipe = (recipeId: string) => {
+    router.push({
+      pathname: "/editRecipe", // <--- DEBE coincidir con el path de tu archivo editRecipe.tsx
+      params: { id: recipeId }
+    });
+  };
+  const handleGoToCreateRecipe = () => {
+    //router.push('/create-recipe'); // Asumiendo que '/create-recipe' es tu ruta para crear
+  };
+
   return (
     <View style={profileStyles.container}>
       <ScrollView contentContainerStyle={profileStyles.scrollViewContent}>
@@ -113,51 +123,48 @@ const ProfileRecipesScreen =  () => {
         <View style={profileStyles.section}>
           <View style={profileStyles.sectionHeader}>
             <Text style={profileStyles.sectionTitle}>Tus recetas creadas</Text>
-            <TouchableOpacity onPress={handleVerMas}>
-              <Text style={profileStyles.viewMoreText}>Ver más</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={profileStyles.featuredRecipesContainer}>
-            {recipesCreated.slice(0, 5).map((recipe) => (
-              <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} onPress={() => handleRecipePress(recipe.id)}>
-                <ImageBackground source={{ uri: recipe.image }} style={profileStyles.recipeImage} imageStyle={{ opacity: 0.6 }} resizeMode="cover">
-                  <View style={profileStyles.recipeTitleContainer}>
-                    <Text style={[profileStyles.recipeTitle, { fontFamily: 'WorkSans_400Regular', fontWeight: '500' }]}>{recipe.title}</Text>
-                  </View>
-                </ImageBackground>
+            {/* El botón "Ver más" solo si hay recetas */}
+            {recipesCreated.length > 0 && (
+              <TouchableOpacity onPress={handleVerMas}>
+                <Text style={profileStyles.viewMoreText}>Ver más</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
-          {recipesCreated.length === 0 && (
-            <Text style={profileStyles.noRecipesText}>No has creado ninguna receta aún.</Text>
+            )}
+          </View>
+          {loadingCreated ? (
+            <ActivityIndicator size="large" color="#FF9A16" style={profileStyles.loadingIndicator} />
+          ) : (
+            <RecipeGrid
+              recipes={recipesCreated}
+              onRecipePress={handleRecipePress}
+              showEditButton={true} // Mostrar el botón de editar en cada tarjeta
+              onEditPress={(recipe) => handleEditRecipe(recipe.id)}
+              emptyMessage="No has creado ninguna receta aún."
+            />
           )}
         </View>
-
         <View style={profileStyles.section}>
           <View style={profileStyles.sectionHeader}>
             <Text style={profileStyles.sectionTitle}>Guardadas</Text>
-            <TouchableOpacity onPress={handleViewMoreGuardadas}>
-              <Text style={profileStyles.viewMoreText}>Ver más</Text>
-            </TouchableOpacity>
+            {/* El botón "Ver más" solo si hay recetas */}
+            {recipesSaved.length > 0 && (
+              <TouchableOpacity onPress={handleViewMoreGuardadas}>
+                <Text style={profileStyles.viewMoreText}>Ver más</Text>
+              </TouchableOpacity>
+            )}
           </View>
-          {loadingSaved ? ( // Muestra un indicador de carga
-            <ActivityIndicator size="small" color="#FF9A16" />
-          ) : recipesSaved.length > 0 ? (
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={profileStyles.featuredRecipesContainer}>
-              {recipesSaved.slice(0, 5).map((recipe) => (
-                <TouchableOpacity key={recipe.id} style={profileStyles.recipeCard} onPress={() => handleRecipePress(recipe.id)}>
-                  <ImageBackground source={{ uri: recipe.image }} style={profileStyles.recipeImage} imageStyle={{ opacity: 0.6 }} resizeMode="cover">
-                    <View style={profileStyles.recipeTitleContainer}>
-                      <Text style={[profileStyles.recipeTitle, { fontFamily: 'WorkSans_400Regular', fontWeight: '500' }]}>{recipe.title}</Text>
-                    </View>
-                  </ImageBackground>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
+          {loadingCreated ? (
+            <ActivityIndicator size="large" color="#FF9A16" style={profileStyles.loadingIndicator} />
           ) : (
-            <Text style={profileStyles.noRecipesText}>No has guardado ninguna receta aún.</Text>
+            // Usa el nuevo componente RecipeGrid aquí para las recetas creadas
+
+            <RecipeGrid
+            recipes={recipesSaved.map((r: any) => ({ ...r, rating: Number(r.rating) }))}
+            onRecipePress={(id) => handleRecipePress(id)}
+            />
           )}
         </View>
+
+
       </ScrollView>
       <NavBarComponent />
     </View>

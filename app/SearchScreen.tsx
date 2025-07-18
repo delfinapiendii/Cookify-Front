@@ -239,11 +239,8 @@ const SearchScreen = () => {
               <TextInput
                 placeholder="Buscar Receta"
                 value={searchQuery}
-                // CAMBIO AQUI: Ahora usa handleSearchInputChange
                 onChangeText={handleSearchInputChange}
-                // Opcional: También puedes disparar la búsqueda cuando el usuario presiona "Enter"
                 onSubmitEditing={() => performSearch(searchQuery, activeFilter)}
-                // Opcional: O cuando el input pierde el foco
                 onBlur={() => performSearch(searchQuery, activeFilter)}
                 style={styles.searchBarInput}
                 placeholderTextColor="#86939e"

@@ -20,7 +20,6 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
     marginTop: 10,
     paddingLeft:5,
-    paddingRight:5,
   },
   recipeGridCard: {
     backgroundColor: '#fff',
@@ -67,15 +66,48 @@ const styles = StyleSheet.create({
     color: '#999',
   },
   
-  // Mantén tus estilos existentes para RecipeList.tsx si aún los necesitas
-  // searchResultsContainer: { ... }
-  // recipeCardS: { ... }
-  // recipeImageS: { ... }
-  // recipeInfo: { ... }
-  // recipeTitleS: { ... }
-  // ratingContainer: { ... }
-  // rating: { ... }
-  // chef: { ... }
+  emptyGridContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 50,
+  },
+  emptyGridText: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
+  createRecipeButton: {
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 15,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: '#FF9A16',
+    borderStyle: 'dashed',
+    backgroundColor: '#FFF',
+    width: cardWidth * 1.5,
+    height: cardWidth * 1.2,
+  },
+  createRecipeButtonText: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FF9A16',
+    textAlign: 'center',
+  },
+  editButton: { // Nuevo estilo para el botón de editar dentro de la tarjeta
+    position: 'absolute',
+    top: 5,    
+    right: 20,  
+    backgroundColor: '#fff',
+    borderRadius: 15, // Más pequeño para que quepa bien en la tarjeta
+    padding: 3,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1, // Asegura que esté por encima de la imagen y el título
+  },
 });
 
 export default styles;

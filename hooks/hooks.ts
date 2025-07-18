@@ -620,6 +620,45 @@ export const UsehandleDeleteRecipe = async (recipeIdParam: string, p0: () => voi
   }
 };
 
+export const useUpdateRecipe = async (recipeId: string, payload: any) => {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const token = await AsyncStorage.getItem('token');
+  const updateRecipe = async (recipeId: string, updatedData: any) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch(`${url}/api/v1/recetas/${recipeId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          // Agrega el token si tu endpoint lo requiere:
+           Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updatedData),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Error al actualizar la receta');
+      }
+
+      return result;
+    } catch (err: any) {
+      console.error('Error al actualizar la receta:', err);
+      setError(err.message || 'Error inesperado');
+      Alert.alert('Error', err.message || 'No se pudo actualizar la receta');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return { updateRecipe, loading, error };
+};
+
+
 export const searchByFilter = async (filterurl: string, searchQuery: string, setRecipes: Function) => {
 
   try {
@@ -897,6 +936,8 @@ export const useDeleteProfile = async () => {
   
   
 };
+
+
 
 export const editProfile = async (user: string, email: string, oldUser: string, oldEmail: string) => {
   try {

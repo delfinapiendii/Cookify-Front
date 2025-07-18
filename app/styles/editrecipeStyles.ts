@@ -1,0 +1,245 @@
+// styles/editRecipeStyles.ts
+
+import { StyleSheet, Dimensions } from 'react-native';
+
+const { width } = Dimensions.get('window');
+
+const editRecipeStyles = StyleSheet.create({
+  backButton: {
+    marginRight: 10,
+    padding: 5, // Área táctil más grande
+  },
+  headerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    backgroundColor: '#fff',
+    justifyContent: 'flex-start', // Alinea el botón de retroceso a la izquierda
+  },
+  container: {
+    flexGrow: 1,
+    paddingHorizontal: 20,
+    paddingTop: 58,
+    marginBottom: 20, // Espacio para el NavBar
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    fontFamily: 'WorkSans_700Bold', // Asegúrate de que esta fuente esté cargada
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#333',
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+    fontFamily: 'WorkSans_400Regular',
+  },
+  inputError: {
+    borderColor: '#FF4D4D',
+    borderWidth: 1,
+  },
+  pickerButton: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    fontSize: 16,
+    color: '#333',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  servingsContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 1.41,
+    elevation: 2,
+  },
+  servingsIcon: {
+    marginRight: 10,
+  },
+  servingsInput: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+    fontFamily: 'WorkSans_400Regular',
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+    fontFamily: 'WorkSans_700Bold',
+  },
+  ingredientRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  ingredientInput: {
+    flex: 2,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+    fontSize: 14,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#eee',
+    fontFamily: 'WorkSans_400Regular',
+  },
+  quantityInput: {
+    flex: 1,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+    fontSize: 14,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#eee',
+    fontFamily: 'WorkSans_400Regular',
+  },
+  addIngredientButton: {
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  stepInput: {
+    flex: 3,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 10,
+    marginRight: 10,
+    fontSize: 14,
+    color: '#333',
+    borderWidth: 1,
+    borderColor: '#eee',
+    minHeight: 60, // Para multiline
+    textAlignVertical: 'top',
+    fontFamily: 'WorkSans_400Regular',
+  },
+  // Estilos para la visualización de imágenes no editables
+  mainImageContainer: {
+    height: 200, // Altura fija para el carrusel de imágenes principales
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0', // Fondo si no hay imagen
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 10,
+  },
+  imagePlaceholderContainer: { // Contenedor cuando NO hay imágenes principales (estado vacío)
+    backgroundColor: '#f0f0f0',
+    borderRadius: 10,
+    height: 150,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderStyle: 'dashed',
+  },
+  imagePlaceholderIconText: {
+    color: '#888',
+    marginTop: 5,
+    fontFamily: 'WorkSans_400Regular',
+  },
+  stepImagePlaceholder: { // Estilo para el área de imagen del paso deshabilitada
+    flex: 1,
+    height: 60,
+    backgroundColor: '#f9f9f9',
+    borderRadius: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 10,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  stepImagePlaceholderText: {
+    fontSize: 10,
+    color: '#BBB',
+    fontFamily: 'WorkSans_400Regular',
+  },
+  stepExistingImage: { // Estilo para la imagen del paso existente
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+  },
+  addStepButton: {
+    alignSelf: 'flex-start',
+    marginTop: 5,
+  },
+  publishButton: {
+    backgroundColor: '#FF9A16',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  publishButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'WorkSans_700Bold',
+  },
+  deleteRecipeButton: {
+    backgroundColor: '#FF4D4D',
+    borderRadius: 10,
+    padding: 15,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  deleteRecipeButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    fontFamily: 'WorkSans_700Bold',
+  },
+});
+
+export default editRecipeStyles;
