@@ -214,6 +214,8 @@ const pickImage = async () => {
 
     try {
       const uploadedUrl = await uploadImage(selected.uri);
+       console.log('Imagen subida con éxito:', uploadedUrl);
+
       if (uploadedUrl) {
         setImageUrls(prev => [...prev, uploadedUrl]); 
         setImageError(false); 
@@ -251,6 +253,7 @@ const pickImageForStep = async (stepIndex: number) => {
 
     try {
       const uploadedUrl = await uploadImage(imageSelected.uri);
+      console.log('Imagen del paso subida con éxito:', uploadedUrl);
       if (uploadedUrl) {
         const updatedStepsWithUrl = [...newSteps];
         updatedStepsWithUrl[stepIndex].imageUrl = uploadedUrl;

@@ -34,7 +34,7 @@ const RecipeGrid: React.FC<Props> = ({
   onCreatePress = () => {},
   emptyMessage = 'No hay recetas para mostrar.',
   showEditButton = false,
-  onEditPress = () => {},
+  onEditPress,
   horizontal = false, // ✅ Valor por defecto
 }) => {
   const renderCard = ({ item }: { item: Recipe }) => (
@@ -70,17 +70,18 @@ const RecipeGrid: React.FC<Props> = ({
         <Text style={styles.recipeGridChef}>@{item.chef ?? 'Chef'}</Text>
       </View>
 
-      {showEditButton && (
-        <TouchableOpacity
-          style={styles.editButton}
-          onPress={(e) => {
-            e.stopPropagation();
-            onEditPress(item);
-          }}
-        >
-          <Ionicons name="pencil-outline" size={20} color="rgba(255,154,22,0.8)" />
-        </TouchableOpacity>
-      )}
+      {showEditButton && onEditPress && (
+  <TouchableOpacity
+    style={styles.editButton}
+    onPress={(e) => {
+      e.stopPropagation?.(); // Por seguridad, aunque TouchableOpacity no tenga nativamente stopPropagation
+      onEditPress(item);
+    }}
+  >
+    <Ionicons name="pencil-outline" size={20} color="rgba(255,154,22,0.8)" />
+  </TouchableOpacity>
+)}
+
     </TouchableOpacity>
   );
 

@@ -21,15 +21,18 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Asegúrate de que estas rutas sean correctas
 import LogoHeader from './components/logoHeader';
-import NavBar from './components/navBar'; // Posible fuente del error si tiene un ScrollView/FlatList vertical interno
+import NavBar from './components/navBar';
 import ModalSelector from './components/modalSelector';
 import CustomAlertModal from './components/alert';
 
 // Importa tus estilos separados
-import editRecipeStyles from './styles/editrecipeStyles'; // Asegúrate que el nombre del archivo es 'editRecipeStyles.ts'
+import editRecipeStyles from './styles/editrecipeStyles';
 
-// Importa tus funciones de API
-import { fetchRecipeDetails, useUpdateRecipe } from '../hooks/hooks';
+// ¡¡¡IMPORTACIONES AJUSTADAS!!!
+// Importa SOLO las funciones que vas a usar de hooks.ts (solo publishRecipe)
+import { fetchRecipeDetails, publishRecipe } from '../hooks/hooks';
+// Importa la NUEVA función de eliminación
+import { deleteRecipeForEdit } from '../hooks/hooks'; // <--- ¡NUEVA IMPORTACIÓN!
 
 
 const { width } = Dimensions.get('window');
@@ -49,10 +52,6 @@ interface RecipeDetail {
 const EditRecipeScreen = () => {
     const { id } = useLocalSearchParams();
     const recipeId = typeof id === 'string' ? id : '';
-
-    // ¡¡¡CORRECCIÓN CLAVE AQUÍ!!!
-    // Inicializa el hook useUpdateRecipe correctamente
-
 
   const [recipe, setRecipe] = useState<RecipeDetail | null>(null);
   const [recipeName, setRecipeName] = useState('');
@@ -78,13 +77,9 @@ const EditRecipeScreen = () => {
   const [stepDescriptionErrors, setStepDescriptionErrors] = useState<boolean[]>([]);
   const [showPicker, setShowPicker] = useState(false);
   const [isSuccessModalVisible, setIsSuccessModalVisible] = useState(false);
-  // Mantengo isUpdatingLocal por si hay otra lógica de carga que no sea del hook,
-  // pero para el botón, usaremos isUpdatingHook o una combinación de ambos.
   const [isUpdatingLocal, setIsUpdatingLocal] = useState(false);
 
-
   const [fontsLoaded] = useFonts({ WorkSans_400Regular, WorkSans_700Bold });
-
 
   useEffect(() => {
     if (!fontsLoaded) SplashScreen.preventAutoHideAsync();
@@ -233,38 +228,71 @@ const EditRecipeScreen = () => {
       return;
     }
 
-    setIsUpdatingLocal(true);
+    setIsUpdatingLocal(true); // Activa el spinner local
+    console.log("Iniciando handleSaveChanges...");
+    console.log("ID de la receta a eliminar:", recipeId);
+
     try {
-        const payload = {
-          titulo: recipeName,
-          descripcion: description,
-          tipo: recipeType,
-          porciones: Number(servings),
-          composiciones: ingredients,
-          pasos: steps,
-        };
+      // Paso 1: Eliminar la receta existente usando la NUEVA función
+      console.log('Llamando a deleteRecipeForEdit...');
+      const deleteResult = await deleteRecipeForEdit(recipeId); // <--- ¡CAMBIO CLAVE AQUÍ!
 
-        const token = await AsyncStorage.getItem('token');
-        if (!token) {
-          Alert.alert('Error', 'No se encontró token de autenticación.');
-          setIsUpdatingLocal(false);
-          return;
-        }
-
-        console.log('Enviando datos de edición:', payload);
-
-        
-        // ¡¡¡CORRECCIÓN CLAVE AQUÍ!!!
-        // Llama a la función `updateRecipe` devuelta por el hook, no al hook directamente
-
-        
-      } catch (error: any) {
-        console.error('Error al editar receta:', error);
-        Alert.alert('Error al guardar', 'Hubo un error al guardar los cambios: ' + (error.message || 'Error desconocido'));
-      } finally {
+      if (!deleteResult.success) {
+        Alert.alert('Error al Eliminar Receta', deleteResult.message || 'Error desconocido al eliminar.');
         setIsUpdatingLocal(false);
+        return; // Detener si la eliminación falla
       }
+
+      console.log('Receta eliminada correctamente. Procediendo a publicar la nueva.');
+
+      // Formateo de datos para la nueva publicación
+      const formattedSteps = steps.map((step) => ({
+        description: step.descripcion,
+        mediaUrl: step.imagenUrl || '',
+        mediaType: 'image' as 'image',
+      }));
+      const formattedIngredients = ingredients.map((i) => ({
+        name: i.ingrediente,
+        quantity: i.cantidad,
+      }));
+
+      // Paso 2: Publicar la nueva receta usando el publishRecipe existente
+      // Mantenemos el envoltorio de la promesa por si publishRecipe también es callback-based y no devuelve promesa
+      await new Promise<void>((resolve, reject) => {
+        publishRecipe(
+          recipeName,
+          description,
+          recipeType,
+          servings,
+          formattedIngredients,
+          formattedSteps,
+          mainImages,
+          () => {
+            console.log('CALLBACK DE ÉXITO DE PUBLICACIÓN: Nueva receta publicada con éxito.');
+            setIsSuccessModalVisible(true);
+            resolve();
+            router.push('/home'); 
+          },
+          (publishError: string) => {
+            console.error('CALLBACK DE ERROR DE PUBLICACIÓN: Error al publicar la nueva receta:', publishError);
+            Alert.alert('Error al Publicar Nueva Receta', publishError);
+            reject(new Error(publishError));
+          }
+        );
+      });
+
+    } catch (error: any) {
+      console.error('Error inesperado en handleSaveChanges (eliminación/publicación):', error);
+      Alert.alert('Error', 'Hubo un error inesperado al intentar guardar los cambios: ' + (error.message || 'Error desconocido'));
+    } finally {
+      setIsUpdatingLocal(false);
+    }
   };
+  const formatRecipeType = (type: string) => {
+    if (!type) return '';
+    return type.charAt(0).toUpperCase() + type.slice(1).toLowerCase();
+  };
+  
 
   const closeModalSuccess = () => {
     setIsSuccessModalVisible(false);
@@ -287,7 +315,6 @@ const EditRecipeScreen = () => {
 
           {/* Carrusel de imágenes - Solo para VISUALIZAR las imágenes existentes */}
           {mainImages.length > 0 ? (
-            // Este FlatList es horizontal, por lo que no debería causar el error si el ScrollView es vertical.
             <FlatList
               data={mainImages}
               horizontal
@@ -342,11 +369,10 @@ const EditRecipeScreen = () => {
             onPress={() => setShowPicker(true)}
           >
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', flex: 1 }}>
-              <Text style={[editRecipeStyles.servingsInput, recipeType ? { fontFamily: 'WorkSans_400Regular', color: '#333' } : { color: '#888', fontFamily: 'WorkSans_400Regular' }]}>
-                {recipeType
-                  ? recipeType.charAt(0).toUpperCase() + recipeType.slice(1)
-                  : 'Seleccionar tipo de receta'}
-              </Text>
+            <Text style={[editRecipeStyles.servingsInput, recipeType ? { fontFamily: 'WorkSans_400Regular', color: '#333' } : { color: '#888', fontFamily: 'WorkSans_400Regular' }]}>
+              {recipeType ? formatRecipeType(recipeType) : 'Seleccionar tipo de receta'}
+            </Text>
+
               <AntDesign name="caretdown" size={10} color="#555" />
             </View>
           </TouchableOpacity>
@@ -432,7 +458,7 @@ const EditRecipeScreen = () => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity style={editRecipeStyles.publishButton} onPress={handleSaveChanges} disabled={isUpdatingLocal }>
+          <TouchableOpacity style={editRecipeStyles.publishButton} onPress={handleSaveChanges} disabled={isUpdatingLocal}>
             {isUpdatingLocal ? (
               <ActivityIndicator color="#fff" />
             ) : (
@@ -443,15 +469,16 @@ const EditRecipeScreen = () => {
           <ModalSelector
             visible={showPicker}
             title="Selecciona el tipo de receta"
-            options={['Salado', 'Dulce', 'Vegetariana', 'Vegana', 'Postre']}
-            highlightedOption={recipeType ? recipeType.charAt(0).toUpperCase() + recipeType.slice(1) : ''}
+            options={['Salado', 'Dulce', 'Vegetariana', 'Vegana', 'Postre']} // Con mayúscula
+            highlightedOption={formatRecipeType(recipeType)} // Capitalizado también
             onClose={() => setShowPicker(false)}
             onSelectOption={(option: string) => {
-              setRecipeType(option.toLowerCase());
+              setRecipeType(option.toLowerCase()); // Guardás en minúsculas
               setTypeError(false);
               setShowPicker(false);
             }}
           />
+
 
           <CustomAlertModal
             isVisible={isSuccessModalVisible}

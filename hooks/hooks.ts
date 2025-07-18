@@ -619,6 +619,45 @@ export const UsehandleDeleteRecipe = async (recipeIdParam: string, p0: () => voi
     // Revertir el estado si la operación falla por error de red
   }
 };
+interface DeleteRecipeResult {
+  success: boolean;
+  message?: string;
+  error?: any;
+}
+
+export const deleteRecipeForEdit = async (recipeId: string): Promise<DeleteRecipeResult> => {
+  try {
+    const token = await AsyncStorage.getItem('token');
+    if (!token) {
+      return { success: false, message: 'No se encontró token de autenticación.' };
+    }
+
+    console.log('Intentando eliminar receta (deleteRecipeForEdit):', recipeId);
+
+    const response = await fetch(`${url}/api/v1/recetas/${recipeId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (response.ok) {
+      console.log('Receta eliminada con éxito por deleteRecipeForEdit.');
+      return { success: true, message: 'Receta eliminada con éxito.' };
+    } else {
+      const errorData = await response.json();
+      const errorMessage = errorData.message || `Error al eliminar la receta (estado: ${response.status})`;
+      console.error('Error al eliminar receta (deleteRecipeForEdit):', errorMessage, errorData);
+      return { success: false, message: errorMessage, error: errorData };
+    }
+  } catch (err: any) {
+    const errorMessage = err.message || 'Error de red al intentar eliminar la receta.';
+    console.error('Excepción al eliminar receta (deleteRecipeForEdit):', errorMessage, err);
+    return { success: false, message: errorMessage, error: err };
+  }
+};
+
 
 export const useUpdateRecipe = async (recipeId: string, payload: any) => {
   const [loading, setLoading] = useState(false);

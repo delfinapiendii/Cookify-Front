@@ -70,7 +70,10 @@ export default function FilteredRecipesScreen() {
             image: recipe.image || recipe.imageUrl || recipe.imagenes || null
           }))}
           onRecipePress={handleRecipePress}
+          showEditButton={title === 'Tus recetas creadas'} // ✅ solo mostrar si vienen de "creadas"
+          onEditPress={(recipe) => router.push(`/editRecipe?id=${recipe.id}`)} // ✅ pasar función de edición
         />
+        
         
         ) : (
           <Text style={localStyles.noRecipesText}>No se encontraron recetas.</Text>
