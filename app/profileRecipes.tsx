@@ -120,7 +120,7 @@ const ProfileRecipesScreen =  () => {
 
         <View style={profileStyles.divider} />
 
-        <View style={profileStyles.section}>
+        <View style={[profileStyles.section, {flex: 1}]}>
           <View style={profileStyles.sectionHeader}>
             <Text style={profileStyles.sectionTitle}>Tus recetas creadas</Text>
             {/* El botón "Ver más" solo si hay recetas */}
@@ -136,10 +136,12 @@ const ProfileRecipesScreen =  () => {
             <RecipeGrid
               recipes={recipesCreated}
               onRecipePress={handleRecipePress}
-              showEditButton={true} // Mostrar el botón de editar en cada tarjeta
               onEditPress={(recipe) => handleEditRecipe(recipe.id)}
+              showEditButton={true}
               emptyMessage="No has creado ninguna receta aún."
+              horizontal={true} // ✅ activa modo carrusel
             />
+
           )}
         </View>
         <View style={profileStyles.section}>

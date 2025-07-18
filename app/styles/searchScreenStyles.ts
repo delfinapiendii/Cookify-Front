@@ -4,6 +4,7 @@ const seacrhScreenStyles = StyleSheet.create({
   containerHome: {
     
     paddingTop: 58,
+    paddingBottom: 60,
   },
   searchBarContainer: {
     paddingHorizontal: 10,

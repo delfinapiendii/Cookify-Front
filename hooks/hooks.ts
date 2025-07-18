@@ -841,7 +841,6 @@ export const publishRecipe = async (
     onError(err.message || 'Error de red');
   }
 };
-
 export const uploadImage = async (imageUri) => {
   const formData = new FormData();
   const file = {
@@ -868,8 +867,6 @@ export const uploadImage = async (imageUri) => {
     return null;
   };
 };
-
-
 export const sendResetEmail = async (email: string) => {
    console.log(email)
 

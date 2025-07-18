@@ -78,6 +78,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
   },
+  emptyMessege: {
+    fontSize: 16,
+    color: '#888',
+    textAlign: 'center',
+    marginBottom: 20,
+  },
   createRecipeButton: {
     flexDirection: 'column',
     justifyContent: 'center',

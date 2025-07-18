@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, Image, TouchableOpacity, Dimensions, FlatList, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import styles from '../styles/recipeGridStyles';
 
@@ -19,77 +19,106 @@ interface Recipe {
 interface Props {
   recipes: Recipe[];
   onRecipePress?: (id: string) => void;
-  showCreateButton?: boolean; // Sigue siendo opcional
-  onCreatePress?: () => void; // Sigue siendo opcional
-  emptyMessage?: string;      // Sigue siendo opcional
-  // Nueva prop para mostrar el botón de editar en cada tarjeta (opcional)
+  showCreateButton?: boolean;
+  onCreatePress?: () => void;
+  emptyMessage?: string;
   showEditButton?: boolean;
-  onEditPress?: (recipe: Recipe) => void; // Función para el botón de editar
+  onEditPress?: (recipe: Recipe) => void;
+  horizontal?: boolean; // ✅ NUEVA PROP
 }
 
 const RecipeGrid: React.FC<Props> = ({
   recipes,
   onRecipePress,
-  showCreateButton = false, // Valor por defecto: false
-  onCreatePress = () => {}, // Función vacía por defecto
-  emptyMessage = 'No hay recetas para mostrar.', // Mensaje por defecto
-  showEditButton = false, // Valor por defecto: false
-  onEditPress = () => {}, // Función vacía por defecto
+  showCreateButton = false,
+  onCreatePress = () => {},
+  emptyMessage = 'No hay recetas para mostrar.',
+  showEditButton = false,
+  onEditPress = () => {},
+  horizontal = false, // ✅ Valor por defecto
 }) => {
- 
+  const renderCard = ({ item }: { item: Recipe }) => (
+    <TouchableOpacity
+      key={item.id}
+      style={[styles.recipeGridCard, { width: horizontal ? 180 : cardWidth, marginRight: horizontal ? 12 : 0 }]}
+      onPress={() => onRecipePress?.(item.id)}
+    >
+      <View style={styles.imageContainer}>
+        <Image
+          source={{ uri: item.image }}
+          style={styles.recipeGridImage}
+          resizeMode="cover"
+        />
+      </View>
 
-  // Caso: Hay recetas
-  return (
-    <View style={styles.recipeGridContainer}>
-      {recipes.map((recipe) => (
-        <TouchableOpacity
-          key={recipe.id}
-          style={[styles.recipeGridCard, { width: cardWidth }]}
-          onPress={() => onRecipePress?.(recipe.id)}
+      <View style={styles.recipeGridInfo}>
+        <Text
+          style={[styles.recipeGridTitle, { fontFamily: 'WorkSans_400Regular' }]}
+          numberOfLines={2}
         >
-          <View style={styles.imageContainer}>
-            <Image
-              source={{ uri: recipe.image }}
-              style={styles.recipeGridImage}
-              resizeMode="cover"
-            />
-          </View>
+          {typeof item.title === 'string' && item.title.trim() !== ''
+            ? item.title
+            : 'Receta sin título'}
+        </Text>
 
-          <View style={styles.recipeGridInfo}>
-            <Text
-              style={[styles.recipeGridTitle, { fontFamily: 'WorkSans_400Regular' }]}
-              numberOfLines={2}
-            >
-              {typeof recipe.title === 'string' && recipe.title.trim() !== ''
-                ? recipe.title
-                : 'Receta sin título'}
-            </Text>
+        <View style={styles.recipeGridRatingContainer}>
+          <Text style={styles.recipeGridRating}>
+            {typeof item.rating === 'number' ? item.rating.toFixed(1) : '0.0'}
+          </Text>
+          <Ionicons name="star" size={16} color="#000000" />
+        </View>
+        <Text style={styles.recipeGridChef}>@{item.chef ?? 'Chef'}</Text>
+      </View>
 
-            <View style={styles.recipeGridRatingContainer}>
-              <Text style={styles.recipeGridRating}>
-                  {typeof recipe.rating === 'number' ? recipe.rating.toFixed(1) : '0.0'}
-              </Text>
-
-              <Ionicons name="star" size={16} color="#00000" />
-            </View>
-            <Text style={styles.recipeGridChef}>@{recipe.chef ?? 'Chef'}</Text>
-          </View>
-
-          {/* Botón de Editar - SOLO se muestra si showEditButton es true */}
-          {showEditButton && (
-            <TouchableOpacity
-              style={styles.editButton} // Asegúrate de definir este estilo en recipeGridStyles
-              onPress={(e) => {
-                e.stopPropagation(); // Evita que se dispare el onPress de la tarjeta
-                onEditPress(recipe); // Pasa la receta a la función onEditPress
-              }}
-            >
-              <Ionicons name="pencil-outline" size={20} color="rgba(255,154,22,0.8)" />
-            </TouchableOpacity>
-          )}
+      {showEditButton && (
+        <TouchableOpacity
+          style={styles.editButton}
+          onPress={(e) => {
+            e.stopPropagation();
+            onEditPress(item);
+          }}
+        >
+          <Ionicons name="pencil-outline" size={20} color="rgba(255,154,22,0.8)" />
         </TouchableOpacity>
-      ))}
-    </View>
+      )}
+    </TouchableOpacity>
+  );
+
+  if (recipes.length === 0) {
+    return (
+      <View style={styles.recipeGridContainer}>
+        <Text style={styles.emptyMessege}>{emptyMessage}</Text>
+      </View>
+    );
+  }
+
+  return (
+
+      <View style={styles.recipeGridContainer}>
+              {horizontal ? (
+        <View style={{ height: 260 }}>
+          <FlatList
+            data={recipes.slice(0, 5)}
+            renderItem={renderCard}
+            keyExtractor={(item) => item.id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 10 }}
+          />
+        </View>
+      ) : (
+        <FlatList
+          data={recipes}
+          renderItem={renderCard}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false} // 👈 importante para no chocar con el ScrollView padre
+          contentContainerStyle={{ paddingHorizontal: 0 }}
+        />
+      )}
+
+      </View>    
   );
 };
 

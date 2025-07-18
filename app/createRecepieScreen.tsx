@@ -26,7 +26,6 @@ import * as ImagePicker from 'expo-image-picker';
 import { Image } from 'react-native';
 import { publishRecipe, uploadImage, UsehandleDeleteRecipe, useCreatedRecipes, loadPendingRecipes } from '../hooks/hooks';
 import * as Network from 'expo-network';
-import { Video, ResizeMode } from 'expo-av';
 
 
 const { width } = Dimensions.get('window');
@@ -55,7 +54,7 @@ const CreateRecipeScreen = () => {
   const [ingredientNameErrors, setIngredientNameErrors] = useState<boolean[]>([]);
   const [ingredientQuantityErrors, setIngredientQuantityErrors] = useState<boolean[]>([]);
 
-  const [steps, setSteps] = useState<Array<{ description: string; mediaUri: string | null; mediaUrl: string | null; mediaType: 'image' | 'video' | null }>>([{ description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
+  const [steps, setSteps] = useState([{ description: '', imageUri: null as string | null, imageUrl: null as string | null }]);
   const [stepDescriptionErrors, setStepDescriptionErrors] = useState<boolean[]>([]);
 
   const [showPicker, setShowPicker] = useState(false);
@@ -67,10 +66,10 @@ const CreateRecipeScreen = () => {
 
 
 
-  const [media, setMedia] = useState<Array<{ url: string, type: 'image' | 'video' }>>([]);
-  const [imageError, setImageError] = useState(false);
-
-  const carouselData = [...media, 'ADD_BUTTON']; 
+  const [images, setImages] = useState<any[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [imageError, setImageError] = useState(false); 
+  const carouselData = [...imageUrls, 'ADD_BUTTON'];
 
 
   const { recipes } = useCreatedRecipes();
@@ -132,7 +131,7 @@ const CreateRecipeScreen = () => {
   };
 
   const handleAddStep = () => {
-    setSteps([...steps, { description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
+    setSteps([...steps, { description: '', imageUri: null, imageUrl: null }]);
   };
 
   const handleStepChange = (index: number, value: string) => {
@@ -158,8 +157,10 @@ const CreateRecipeScreen = () => {
     setRecipeType('');
     setServings('');
     setIngredients([{ name: '', quantity: '' }]);
-    setSteps([{ description: '', mediaUri: null, mediaUrl: null, mediaType: null }]);
-    setMedia([]);
+    setSteps([{ description: '', imageUri: null, imageUrl: null }]);
+    setImages([]);
+    setImageUrls([]); 
+
     setNameError(false);
     setDescError(false);
     setTypeError(false);
@@ -180,13 +181,11 @@ const CreateRecipeScreen = () => {
   };
 
   const handleConfirmReplace = async () => {
-    console.log('Usuario eligió "Sí", reemplazando receta...');
     setduplicateRemove(true);
     setIsDuplicateRecipeModalVisible(false);
   };
 
   const handleCancelPublication = () => {
-    console.log('Usuario eligió "No", cancelando publicación.');
     setIsDuplicateRecipeModalVisible(false);
   };
 
@@ -201,29 +200,71 @@ const pickImage = async () => {
     return;
   }
 
+
   const result = await ImagePicker.launchImageLibraryAsync({
-    mediaTypes: ImagePicker.MediaTypeOptions.All,
-    allowsMultipleSelection: false,
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
     allowsEditing: true,
     aspect: [4, 3],
     quality: 1,
   });
-
+  
+  
   if (!result.canceled) {
     const selected = result.assets[0];
 
     try {
       const uploadedUrl = await uploadImage(selected.uri);
-      console.log("Archivo subido con éxito:", uploadedUrl);
       if (uploadedUrl) {
-        setMedia(prev => [...prev, { url: uploadedUrl, type: selected.type as 'image' | 'video' }]);
+        setImageUrls(prev => [...prev, uploadedUrl]); 
         setImageError(false); 
       } else {
-        Alert.alert("Error", "No se pudo subir el archivo.");
+        Alert.alert("Error", "No se pudo subir la imagen.");
       }
     } catch (error) {
-      console.error("Error al subir el archivo:", error);
-      Alert.alert("Error", "Fallo en la carga del archivo.");
+      console.error("Error al subir la imagen:", error);
+      Alert.alert("Error", "Fallo en la carga de imagen.");
+    }
+  }
+};
+
+const pickImageForStep = async (stepIndex: number) => {
+  const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+  if (!permissionResult.granted) {
+    Alert.alert("Permiso Denegado", "Necesitamos permiso para acceder a tu galería.");
+    return;
+  }
+
+  const result = await ImagePicker.launchImageLibraryAsync({
+    mediaTypes: ImagePicker.MediaTypeOptions.Images,
+    allowsEditing: true,
+    aspect: [4, 3],
+    quality: 1,
+  });
+  
+  if (!result.canceled) {
+    const imageSelected = result.assets[0];
+
+    const newSteps = [...steps];
+    newSteps[stepIndex].imageUri = imageSelected.uri;
+    setSteps(newSteps);
+
+    try {
+      const uploadedUrl = await uploadImage(imageSelected.uri);
+      if (uploadedUrl) {
+        const updatedStepsWithUrl = [...newSteps];
+        updatedStepsWithUrl[stepIndex].imageUrl = uploadedUrl;
+        setSteps(updatedStepsWithUrl);
+      } else {
+        Alert.alert("Error", "No se pudo subir la imagen del paso.");
+        newSteps[stepIndex].imageUri = null;
+        setSteps(newSteps);
+      }
+    } catch (uploadError) {
+      console.error("Error al subir la imagen del paso:", uploadError);
+      Alert.alert("Error", "Fallo en la carga de la imagen del paso.");
+      newSteps[stepIndex].imageUri = null;
+      setSteps(newSteps);
     }
   }
 };
@@ -231,7 +272,6 @@ const pickImage = async () => {
 const hookPublishRecipe = async () => {
   if (duplicateRemove) {
     const existingRecipeId = findExistingRecipe(recipeName);
-    console.log('Receta duplicada, se eliminara.',existingRecipeId);
     try{
       await UsehandleDeleteRecipe(existingRecipeId, () => console.log('Recipe deleted successfully'), (error) => console.error('Error deleting recipe:', error));
       setIsDuplicateRecipeModalVisible(false);
@@ -250,8 +290,12 @@ const hookPublishRecipe = async () => {
       recipeType,
       servings,
       ingredients,
-      steps,
-      media.map(item => item.url),
+      steps.map(step => ({
+        description: step.description,
+        mediaUrl: step.imageUrl || '',
+        mediaType: 'image',
+      })),
+      imageUrls,
       () => handleConfirm(),
       (msg) => {
         if (msg && msg.includes('Ya existe una receta')) {
@@ -269,20 +313,16 @@ const hookPublishRecipe = async () => {
 const findExistingRecipe = (name: string) => {
   const recipe = recipes.find((recipe) => recipe.title.toLowerCase() === name.toLowerCase());
   if (recipe) {
-    console.log('Receta duplicada encontrada:', recipe.id);
     return recipe.id;
   } else {
     loadPendingRecipes(setpendingRecipes);
     const pendingRecipe = pendingRecipes.find((recipe) => recipe.title.toLowerCase() === name.toLowerCase());
     if (pendingRecipe) {
-      console.log('Receta duplicada encontrada en pendientes:', pendingRecipe.id);
       return pendingRecipe.id;
     }
   }
   if (recipe) {
-    console.log('Receta duplicada encontrada:', recipe.id);
   } else {
-    console.log('No se encontró receta duplicada.');
   }
 
   return recipe ? recipe.id : null;
@@ -292,56 +332,17 @@ const checkforDuplicateRecipe = (name: string) => {
     const existingRecipeId = findExistingRecipe(name);
     if (existingRecipeId) {
       setIsDuplicateRecipeModalVisible(true);   
-      console.log('Receta duplicada encontrada:', existingRecipeId);
       return true;
     }
   }
   return false;
 };
 
-// ✅ Nueva función para guardar la receta localmente
-  const saveRecipeLocally = async () => {
-    try {
-      // Obtiene las recetas pendientes existentes
-      const jsonValue = await AsyncStorage.getItem('pendingRecipes');
-      const existingRecipes = jsonValue != null ? JSON.parse(jsonValue) : [];
-      
-      // Crea la nueva receta con todos los datos del estado
-      const newPendingRecipe = {
-        id: Date.now(), // Usar un ID único temporal
-        title: recipeName,
-        description: description,
-        recipeType: recipeType,
-        servings: servings,
-        ingredients: ingredients,
-        steps: steps,
-        media: media,
-      };
-
-      // Añade la nueva receta al array y la guarda
-      const updatedRecipes = [...existingRecipes, newPendingRecipe];
-      await AsyncStorage.setItem('pendingRecipes', JSON.stringify(updatedRecipes));
-      Alert.alert('Receta Guardada', 'La receta se ha guardado localmente. La puedes publicar más tarde desde la sección de recetas pendientes.');
-
-    } catch (e) {
-      console.error('Error al guardar la receta en el dispositivo:', e);
-      Alert.alert('Error', 'No se pudo guardar la receta localmente.');
-    }
-  };
-
-  // ✅ Nueva función para manejar el 'No Publicar' del modal
-  const handleCancelMobileUpload = () => {
-    console.log('Usuario canceló la publicación por datos móviles.');
-    setisCelularModalVisible(false);
-    // ✅ Llama a la función para guardar la receta localmente
-    saveRecipeLocally();
-  };
-
   const handlePublishRecipe = async () => {
     let isValid = true;
 
     
-    if (media.length === 0) {
+    if (!images && !imageUrls) { 
       setImageError(true);
       isValid = false;
     } else {
@@ -411,20 +412,13 @@ const checkforDuplicateRecipe = (name: string) => {
       setisCelularModalVisible(true);
       return;
     } 
-    // ✅ Maneja el caso de conexión a WiFi y la publicación inmediata
-    else if (networkState.type === Network.NetworkStateType.WIFI) {
+    else if (networkState.type === 'WIFI') {
       try {
         await hookPublishRecipe();
       } catch (error) {
-        console.error('Error al publicar por WiFi:', error);
       }
-    }
-    // ✅ Añade el caso de otras conexiones que no son WiFi o celular (por ej. Ethernet)
-    else if (networkState.type === Network.NetworkStateType.UNKNOWN) {
-      setisCelularModalVisible(true);
-      return;
-    }
-  }
+    }  
+  };
   const confirmCelularUpload = async () => {
     try {
       await hookPublishRecipe();    
@@ -432,50 +426,6 @@ const checkforDuplicateRecipe = (name: string) => {
     }
   };
 
-  const pickImageForStep = async (stepIndex: number) => {
-    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permissionResult.granted) {
-      Alert.alert("Permiso Denegado", "Necesitamos permiso para acceder a tu galería.");
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
-
-    if (!result.canceled) {
-      const selected = result.assets[0];
-
-      const newSteps = [...steps];
-      newSteps[stepIndex].mediaUri = selected.uri;
-      newSteps[stepIndex].mediaType = selected.type as 'image' | 'video';
-      setSteps(newSteps);
-
-      try {
-        const uploadedUrl = await uploadImage(selected.uri);
-        if (uploadedUrl) {
-          const updatedStepsWithUrl = [...newSteps];
-          updatedStepsWithUrl[stepIndex].mediaUrl = uploadedUrl;
-          setSteps(updatedStepsWithUrl);
-        } else {
-          Alert.alert("Error", "No se pudo subir el archivo del paso.");
-          newSteps[stepIndex].mediaUri = null;
-          newSteps[stepIndex].mediaType = null;
-          setSteps(newSteps);
-        }
-      } catch (uploadError) {
-        console.error("Error al subir el archivo del paso:", uploadError);
-        Alert.alert("Error", "Fallo en la carga del archivo del paso.");
-        newSteps[stepIndex].mediaUri = null;
-        newSteps[stepIndex].mediaType = null;
-        setSteps(newSteps);
-      }
-    }
-  };
 
   
   return (
@@ -491,7 +441,7 @@ const checkforDuplicateRecipe = (name: string) => {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         data={carouselData}
-        keyExtractor={(item, index) => typeof item === 'string' ? item : item.url + index.toString()}
+        keyExtractor={(item, index) => item + index.toString()}
         renderItem={({ item }) => {
           if (item === 'ADD_BUTTON') {
             return (
@@ -506,27 +456,14 @@ const checkforDuplicateRecipe = (name: string) => {
               </TouchableOpacity>
             );
           } else {
-            const mediaItem = item as { url: string, type: string };
-
-            if (mediaItem.type.startsWith('video')) {
-                return (
-                  <Video
-                    source={{ uri: mediaItem.url }}
-                    style={styles.selectedImageCarrusel}
-                    useNativeControls
-                    resizeMode={ResizeMode.CONTAIN}
-                  />
-                );
-              } else { // Asumimos que es una imagen
-                return (
-                  <Image
-                    source={{ uri: mediaItem.url }}
-                    style={styles.selectedImageCarrusel}
-                  />
+            return (
+              <Image
+                source={{ uri: item }}
+                style={styles.selectedImageCarrusel}
+              />
             );
           }
-        }
-      }}
+        }}
         contentContainerStyle={{ paddingHorizontal: ITEM_MARGIN_HORIZONTAL }} 
       />
       {/* Nueva vista para la flecha de navegación, visible solo si hay más de 1 imagen (+ el botón) */}
@@ -639,26 +576,17 @@ const checkforDuplicateRecipe = (name: string) => {
                   style={styles.stepImagePicker}
                   onPress={() => pickImageForStep(index)}
                 >
-                  {step.mediaType === 'video' ? (
-                      <Video
-                          source={{ uri: step.mediaUrl || step.mediaUri || '' }}
-                          style={styles.stepSelectedImage}
-                          useNativeControls
-                          resizeMode={ResizeMode.CONTAIN}
-                          isLooping
-                      />
-                  ) : step.mediaType === 'image' ? (
-                      <Image
-                          source={{ uri: step.mediaUrl || step.mediaUri || '' }}
-                          style={styles.stepSelectedImage}
-                      />
+                  {step.imageUrl ? (
+                    <Image source={{ uri: step.imageUrl }} style={styles.stepSelectedImage} />
+                  ) : step.imageUri ? (
+                    <Image source={{ uri: step.imageUri }} style={styles.stepSelectedImage} />
                   ) : (
-                      <View style={styles.stepCameraIconContainer}>
-                          <Ionicons name="camera" size={24} color="#888" />
-                          <Ionicons name="add-circle" size={12} color="#555" style={styles.stepAddIcon} />
-                      </View>
+                    <View style={styles.stepCameraIconContainer}>
+                      <Ionicons name="camera" size={24} color="#888" />
+                      <Ionicons name="add-circle" size={12} color="#555" style={styles.stepAddIcon} />
+                    </View>
                   )}
-              </TouchableOpacity>
+                </TouchableOpacity>
 
                 {steps.length > 1 && (
                   <TouchableOpacity onPress={() => handleRemoveStep(index)}>
@@ -714,11 +642,13 @@ const checkforDuplicateRecipe = (name: string) => {
           <CustomAlertModal
             isVisible={isCelularModalVisible}
             message="Estás usando datos móviles. ¿Quieres continuar con la publicación?"
-            onConfirm={confirmCelularUpload} // ✅ Se remueven las acciones redundantes
-            onCancel={handleCancelMobileUpload} // ✅ Nueva función para manejar el cancelar
+            onConfirm={() => {
+                closeModalSuccess();
+                confirmCelularUpload();
+                router.push('/pendingProfile');
+            }}
             confirmText="Publicar"
-            cancelText="No Publicar" // ✅ Se agrega el texto para el botón de cancelar
-            showCancelButton={true} // ✅ Se habilita el botón de cancelar
+            showCancelButton={false}
           />
 
           <CustomAlertModal

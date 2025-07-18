@@ -200,6 +200,7 @@ centerlogo: {
   },
 
   featuredRecipesContainer: {
+    marginLeft: 15,
   },
   recipeCard: {
     height: 140,

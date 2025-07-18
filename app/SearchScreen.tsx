@@ -33,7 +33,6 @@ const FIXED_CATEGORIES = [
   'postre',
 ];
 
-const NAV_BAR_SAFE_AREA_HEIGHT = 82;
 
 const SearchScreen = () => {
   const navigation = useNavigation();
@@ -218,12 +217,11 @@ const SearchScreen = () => {
 
   return (
     <>
-      <View style={{ flex: 1, backgroundColor: '#fff' }}>
+      <View style={{ flex: 1, backgroundColor: '#fff', paddingBottom:80 }}>
         <ScrollView
           style={{ flex: 1 }}
           contentContainerStyle={[
             styles.containerHome,
-            localStyles.scrollViewContentPadding,
           ]}
         >
           <LogoHeader />
@@ -321,35 +319,11 @@ const SearchScreen = () => {
         </ScrollView>
       </View>
 
-      <View style={localStyles.navBarWrapper}>
-        <View style={localStyles.navBarBackground} />
+      <View >
         <BottomNavigation />
       </View>
     </>
   );
 };
-
-const localStyles = StyleSheet.create({
-  scrollViewContentPadding: {
-    paddingBottom: NAV_BAR_SAFE_AREA_HEIGHT,
-  },
-  navBarWrapper: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: NAV_BAR_SAFE_AREA_HEIGHT + 20,
-    overflow: 'hidden',
-  },
-  navBarBackground: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: '100%',
-    backgroundColor: '#fff',
-    zIndex: 1,
-  },
-});
 
 export default SearchScreen;

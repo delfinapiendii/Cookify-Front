@@ -208,12 +208,7 @@ const editRecipeStyles = StyleSheet.create({
     padding: 15,
     alignItems: 'center',
     marginTop: 20,
-    marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    marginBottom: 150,
   },
   publishButtonText: {
     color: '#fff',

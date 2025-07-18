@@ -50,7 +50,7 @@ export default function FilteredRecipesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, {paddingBottom:80}]}>
       {/* Header superior fijo - similar a tu captura de pantalla */}
       <View style={localStyles.headerContainer}>
         <TouchableOpacity onPress={() => router.back()} style={localStyles.backButton}>
