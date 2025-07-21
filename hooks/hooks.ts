@@ -2,7 +2,9 @@ import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { Alert } from 'react-native';
-const url = 'https://turnitos-production.up.railway.app';
+//const url = 'https://turnitos-production.up.railway.app';
+const url = 'http://localhost:3000';
+
 
 export const useCreatedRecipes = () => {
   const [recipes, setRecipes] = useState([]);
